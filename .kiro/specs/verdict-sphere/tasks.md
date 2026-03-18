@@ -1,0 +1,303 @@
+# Implementation Plan: VerdictSphere
+
+## Overview
+
+Full-stack hackathon evaluation platform. Backend is Spring Boot 3.x (Java 17+) under `Springboot_Backend/`, frontend is React 18+ under `React_Frontend/`, database is MySQL 8+. Tasks are ordered so each step builds on the previous and nothing is left unintegrated.
+
+## Tasks
+
+- [x] 1. Backend foundation — project structure, entities, DB config, DataInitializer
+  - [x] 1.1 Refactor the existing Spring Boot project package from `com.example.firstproject` to `com.verdictsphere` and update `pom.xml` with all required dependencies: `spring-boot-starter-security`, `spring-boot-starter-data-jpa`, `jjwt-api/impl/jackson`, `lombok`, `mysql-connector-j`, `jqwik` (test scope)
+    - Remove legacy `UserController`, `UserRepository`, `Users` files and Thymeleaf templates
+    - _Requirements: 1.1, 12.1_
+  - [x] 1.2 Configure `application.properties` and `application-mysql.properties` for MySQL 8+ datasource, JPA `ddl-auto=update`, and JWT secret/expiry properties; add `ADMIN_*` credential properties for the three seeded admins
+    - _Requirements: 1.2_
+  - [x] 1.3 Create JPA entities with Lombok: `User` (id, email, passwordHash, firstName, lastName, role enum, createdAt), `Hackathon`, `Team` (with `acceptanceStatus` enum), `TeamMember`, `TeamJoinRequest` (status enum), `Criteria`, `JudgeAssignment`, `Evaluation`, `RefreshToken`, `AuditLog`
+    - Map all FK relationships per the ERD in the design document
+    - _Requirements: 1.1, 3.1, 4.1, 5.1, 6.2, 7.2, 11.1_
+  - [x] 1.4 Create Spring Data JPA repositories for every entity: `UserRepository`, `HackathonRepository`, `TeamRepository`, `TeamMemberRepository`, `TeamJoinRequestRepository`, `CriteriaRepository`, `JudgeAssignmentRepository`, `EvaluationRepository`, `RefreshTokenRepository`, `AuditLogRepository`
+    - Add query methods needed by services (e.g. `findByEmail`, `findByHackathonId`, `findByTeamIdAndStatus`)
+    - _Requirements: 1.1, 2.3, 5.2, 6.3, 7.8_
+  - [x] 1.5 Implement `DataInitializer` (`ApplicationRunner` bean) that checks for the 3 admin emails and inserts them with BCrypt-hashed passwords from properties if absent (idempotent)
+    - _Requirements: 1.2_
+
+- [x] 2. Auth — JWT infrastructure, register, login, refresh token
+  - [x] 2.1 Implement `JwtUtil` service: generate HS256 access token (15-min expiry, claims: userId/email/role), validate token, extract claims; implement `JwtAuthFilter` (`OncePerRequestFilter`) that reads `Authorization: Bearer` header, validates JWT, and populates `SecurityContext`
+    - _Requirements: 1.4, 1.6, 12.5_
+  - [x] 2.2 Configure `SecurityFilterChain`: permit `/api/auth/**` and `/api/public/**`, require authentication for all other routes, add `JwtAuthFilter` before `UsernamePasswordAuthenticationFilter`, disable CSRF, set session to STATELESS
+    - _Requirements: 12.1, 12.2, 12.3, 12.4_
+  - [x] 2.3 Implement `AuthService` with `register` (validate unique email → 409, BCrypt hash, save as PARTICIPANT), `login` (validate credentials → uniform 401, issue JWT + RefreshToken), `refreshToken` (validate stored token → 401 if invalid/expired, issue new JWT)
+    - _Requirements: 1.1, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8_
+  - [x] 2.4 Implement `AuthController` at `/api/auth` wiring `POST /register`, `POST /login`, `POST /refresh-token` to `AuthService`; implement `GlobalExceptionHandler` (`@RestControllerAdvice`) mapping all custom exceptions to the standard JSON error envelope
+    - _Requirements: 1.1, 1.3, 1.4, 1.5, 1.6, 1.7_
+  - [ ]* 2.5 Write property test for registration role and BCrypt hash (Property 1)
+    - **Property 1: Registration always produces PARTICIPANT role with BCrypt hash**
+    - **Validates: Requirements 1.1, 1.8**
+  - [ ]* 2.6 Write property test for duplicate email registration (Property 2)
+    - **Property 2: Duplicate email registration returns 409**
+    - **Validates: Requirements 1.3**
+  - [ ]* 2.7 Write property test for login JWT expiry (Property 3)
+    - **Property 3: Login returns JWT and Refresh Token for valid credentials**
+    - **Validates: Requirements 1.4**
+  - [ ]* 2.8 Write property test for refresh token round-trip (Property 4)
+    - **Property 4: Refresh token round-trip produces a new valid JWT**
+    - **Validates: Requirements 1.5**
+  - [ ]* 2.9 Write property test for invalid/expired token returns 401 (Property 5)
+    - **Property 5: Invalid or expired tokens return 401**
+    - **Validates: Requirements 1.6, 12.5**
+  - [ ]* 2.10 Write property test for uniform 401 on bad credentials (Property 6)
+    - **Property 6: Invalid login credentials return uniform 401**
+    - **Validates: Requirements 1.7**
+
+- [ ] 3. Checkpoint — ensure all auth tests pass
+  - Ensure all tests pass, ask the user if questions arise.
+
+- [x] 4. Admin APIs — judge management, hackathon CRUD, criteria CRUD
+  - [x] 4.1 Implement `AdminUserService` + `AdminUserController` at `/api/admin`: `POST /judges` (create JUDGE account, BCrypt hash, audit log), `GET /judges`, `DELETE /judges/{id}` (audit log), `GET /users`
+    - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5_
+  - [ ]* 4.2 Write property test for judge creation role and audit entry (Property 7)
+    - **Property 7: Judge creation produces JUDGE role and audit entry**
+    - **Validates: Requirements 2.1**
+  - [ ]* 4.3 Write property test for judge list completeness (Property 8)
+    - **Property 8: Judge list reflects all created judges**
+    - **Validates: Requirements 2.3**
+  - [ ]* 4.4 Write property test for judge deletion and audit entry (Property 9)
+    - **Property 9: Judge deletion removes account and records audit entry**
+    - **Validates: Requirements 2.4**
+  - [x] 4.5 Implement `HackathonService` + extend `AdminController` with `POST /hackathons`, `GET /hackathons`, `PUT /hackathons/{id}` (audit log), `DELETE /hackathons/{id}` (audit log); validate `end_date >= start_date` → 400; implement `GET /api/public/active-hackathons`
+    - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6_
+  - [ ]* 4.6 Write property test for hackathon CRUD round-trip (Property 10)
+    - **Property 10: Hackathon CRUD round-trip preserves all fields**
+    - **Validates: Requirements 3.1, 3.2, 3.3, 3.4**
+  - [ ]* 4.7 Write property test for active-hackathons filter (Property 11)
+    - **Property 11: Public active-hackathons endpoint returns only active hackathons**
+    - **Validates: Requirements 3.5**
+  - [ ]* 4.8 Write property test for invalid date range rejection (Property 12)
+    - **Property 12: Hackathon with end date before start date is rejected**
+    - **Validates: Requirements 3.6**
+  - [x] 4.9 Implement `CriteriaService` + extend `AdminController` with `POST /criteria`, `PUT /criteria/{id}` (audit log), `DELETE /criteria/{id}` (audit log); validate weight range (0 < weight ≤ 100) → 400; validate weight sum = 100 on hackathon activation → 400
+    - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5_
+  - [ ]* 4.10 Write property test for criteria weight out-of-range rejection (Property 13)
+    - **Property 13: Criteria weight validation rejects out-of-range values**
+    - **Validates: Requirements 4.5**
+  - [ ]* 4.11 Write property test for hackathon activation weight sum (Property 14)
+    - **Property 14: Hackathon activation requires criteria weights summing to 100**
+    - **Validates: Requirements 4.4**
+
+- [x] 5. Admin APIs — team management, judge assignments, analytics, export, audit logs
+  - [x] 5.1 Implement `TeamAcceptanceService` + extend `AdminController` with `GET /teams`, `PUT /teams/{id}/accept` (set ACCEPTED, audit log), `PUT /teams/{id}/reject` (set REJECTED, audit log)
+    - _Requirements: 5a.3, 5a.5, 5a.7_
+  - [ ]* 5.2 Write property test for team acceptance/rejection status and audit entry (Property 25)
+    - **Property 25: Team acceptance/rejection sets correct status and records audit entry**
+    - **Validates: Requirements 5a.3, 5a.4, 5a.5, 5a.6**
+  - [x] 5.3 Implement `JudgeAssignmentService` + extend `AdminController` with `POST /judge-assignments/auto/{hackathonId}` (distribute teams evenly, 5–10 per judge), `POST /judge-assignments` (manual, 409 on duplicate), `GET /judge-assignments/{hackathonId}`
+    - _Requirements: 6.1, 6.2, 6.3, 6.4_
+  - [ ]* 5.4 Write property test for auto-assignment distribution bounds (Property 27)
+    - **Property 27: Auto-assignment distributes teams within bounds**
+    - **Validates: Requirements 6.1**
+  - [ ]* 5.5 Write property test for duplicate assignment rejection (Property 28)
+    - **Property 28: Duplicate judge assignment returns 409**
+    - **Validates: Requirements 6.4**
+  - [x] 5.6 Implement `AnalyticsService` + extend `AdminController` with `GET /analytics/{hackathonId}` (completion summary per judge and team) and `GET /export/{hackathonId}` (CSV: team name, weighted score, per-criteria scores, rank)
+    - _Requirements: 10.1, 10.2_
+  - [ ]* 5.7 Write property test for CSV export fields completeness (Property 39)
+    - **Property 39: CSV export contains all required fields for all teams**
+    - **Validates: Requirements 10.2**
+  - [x] 5.8 Implement `AuditService` + extend `AdminController` with `GET /audit-logs` (paginated, filters: userId, action, dateFrom, dateTo)
+    - _Requirements: 10.3, 11.1, 11.2, 11.3_
+  - [ ]* 5.9 Write property test for audit log filter correctness (Property 38)
+    - **Property 38: Audit log filter correctness**
+    - **Validates: Requirements 10.3**
+  - [ ]* 5.10 Write property test for audit log fields completeness (Property 35)
+    - **Property 35: Audit log captures all mutations with required fields**
+    - **Validates: Requirements 11.1, 11.2**
+  - [ ]* 5.11 Write property test for role namespace enforcement (Property 36)
+    - **Property 36: Role-based namespace enforcement**
+    - **Validates: Requirements 12.1, 12.2, 12.3**
+
+- [x] 6. Judge APIs — team acceptance, assignments, evaluations, leaderboard
+  - [x] 6.1 Extend `TeamAcceptanceService` + implement `JudgeController` at `/api/judge` with `GET /teams`, `PUT /teams/{id}/accept` (audit log), `PUT /teams/{id}/reject` (audit log)
+    - _Requirements: 5a.4, 5a.6, 5a.8_
+  - [x] 6.2 Add `GET /assignments` to `JudgeController` returning all teams assigned to the authenticated judge
+    - _Requirements: 7.1_
+  - [x] 6.3 Implement `EvaluationService` + add to `JudgeController`: `POST /evaluations` (validate assignment → 403, validate acceptance_status = ACCEPTED → 403, validate score bounds → 400, persist scores+remarks per criterion), `PUT /evaluations/{id}` (update + audit log), `GET /evaluations`
+    - _Requirements: 7.2, 7.3, 7.4, 7.5, 7.6, 7.7, 7.8_
+  - [ ]* 6.4 Write property test for evaluation persistence (Property 29)
+    - **Property 29: Evaluation submission persists scores and remarks**
+    - **Validates: Requirements 7.2, 7.8**
+  - [ ]* 6.5 Write property test for score bounds validation (Property 30)
+    - **Property 30: Score bounds validation rejects out-of-range scores**
+    - **Validates: Requirements 7.4, 7.5**
+  - [ ]* 6.6 Write property test for unassigned team evaluation rejection (Property 31)
+    - **Property 31: Judge cannot evaluate unassigned teams**
+    - **Validates: Requirements 7.6**
+  - [ ]* 6.7 Write property test for PENDING team blocks evaluation (Property 26)
+    - **Property 26: PENDING teams block evaluation submission with 403**
+    - **Validates: Requirements 5a.2, 7.7**
+  - [x] 6.8 Implement `LeaderboardService` with weighted score formula (design §Weighted Score Formula), innovation tie-break; add `GET /leaderboard` to `JudgeController`
+    - _Requirements: 8.1, 8.2, 8.3, 8.5_
+  - [ ]* 6.9 Write property test for weighted score formula correctness (Property 32)
+    - **Property 32: Weighted score formula is computed correctly**
+    - **Validates: Requirements 8.1**
+  - [ ]* 6.10 Write property test for leaderboard ordering and tie-break (Property 33)
+    - **Property 33: Leaderboard is sorted descending by weighted score with innovation tie-break**
+    - **Validates: Requirements 8.2, 8.3**
+
+- [ ] 7. Checkpoint — ensure all backend judge and admin tests pass
+  - Ensure all tests pass, ask the user if questions arise.
+
+- [x] 8. Participant APIs — team lifecycle, join requests, submission, scores, leaderboard
+  - [x] 8.1 Implement `TeamService` + `ParticipantController` at `/api/participant` with `POST /team` (create team, set creator as lead + member, acceptance_status=PENDING, validate unique membership per hackathon → 409)
+    - _Requirements: 5.1, 5a.1, 5.8, 5.9 (member count)_
+  - [ ]* 8.2 Write property test for team creation initial state (Property 15)
+    - **Property 15: Team creation sets creator as sole member with PENDING status**
+    - **Validates: Requirements 5.1, 5a.1**
+  - [x] 8.3 Add `POST /team/join` (create PENDING join request, validate team not full → 409, validate no duplicate request → 409, validate no existing membership → 409), `GET /team/join-requests` (team lead only), `PUT /team/join-requests/{id}/accept` (add member, set ACCEPTED), `PUT /team/join-requests/{id}/reject` (set REJECTED), `DELETE /team/members/{userId}` (team lead only)
+    - _Requirements: 5.3, 5.4, 5.5, 5.6, 5.7, 5.8, 5.9, 5.10_
+  - [ ]* 8.4 Write property test for join request creates PENDING without adding member (Property 17)
+    - **Property 17: Join request creates PENDING request without adding member**
+    - **Validates: Requirements 5.3**
+  - [ ]* 8.5 Write property test for accepting join request adds member (Property 18)
+    - **Property 18: Accepting a join request adds member and updates status**
+    - **Validates: Requirements 5.4**
+  - [ ]* 8.6 Write property test for rejecting join request does not add member (Property 19)
+    - **Property 19: Rejecting a join request does not add member**
+    - **Validates: Requirements 5.5**
+  - [ ]* 8.7 Write property test for full team rejects join request with 409 (Property 20)
+    - **Property 20: Full team rejects new join requests with 409**
+    - **Validates: Requirements 5.7**
+  - [ ]* 8.8 Write property test for duplicate hackathon membership rejection (Property 21)
+    - **Property 21: Participant cannot be on two teams in the same hackathon**
+    - **Validates: Requirements 5.8**
+  - [ ]* 8.9 Write property test for duplicate join request rejection (Property 22)
+    - **Property 22: Duplicate join request returns 409**
+    - **Validates: Requirements 5.9**
+  - [x] 8.10 Add `PUT /team/submission` (persist GitHub URL, demo URL, presentation URL; validate URL format → 400) and `GET /api/public/teams/{hackathonId}` (return TeamSummary list with memberCount and maxCapacity=4)
+    - _Requirements: 5.11, 5.12, 5.2, 5.9 (member count accuracy)_
+  - [ ]* 8.11 Write property test for project submission URL persistence (Property 23)
+    - **Property 23: Project submission persists all URLs**
+    - **Validates: Requirements 5.11**
+  - [ ]* 8.12 Write property test for invalid URL format rejection (Property 24)
+    - **Property 24: Invalid URL format in submission returns 400**
+    - **Validates: Requirements 5.12**
+  - [ ]* 8.13 Write property test for public team listing member counts (Property 16)
+    - **Property 16: Public team listing reflects accurate member counts**
+    - **Validates: Requirements 5.2**
+  - [x] 8.14 Add `GET /leaderboard` and `GET /scores` to `ParticipantController`; `GET /scores` returns only the authenticated participant's team data; add `GET /api/public/leaderboard/{hackathonId}`
+    - _Requirements: 8.4, 8.6, 9.1, 9.2_
+  - [ ]* 8.15 Write property test for participant scores isolation (Property 34)
+    - **Property 34: Participant scores endpoint returns only own team's data**
+    - **Validates: Requirements 9.2**
+  - [ ]* 8.16 Write property test for public endpoints accessible without auth (Property 37)
+    - **Property 37: Public endpoints are accessible without authentication**
+    - **Validates: Requirements 12.4**
+
+- [ ] 9. Checkpoint — ensure all backend tests pass end-to-end
+  - Ensure all tests pass, ask the user if questions arise.
+
+- [ ] 10. Frontend foundation — project setup, Axios config, AuthContext, ProtectedRoute, routing
+  - [ ] 10.1 Install missing frontend dependencies: `axios`, `react-router-dom@6`, `react-hook-form`, `yup`, `@hookform/resolvers`, `fast-check`; configure Tailwind CSS (if not already done via `index.css`)
+    - _Requirements: 13.5_
+  - [ ] 10.2 Create `src/api/axiosInstance.js`: Axios instance with `baseURL=/api`, request interceptor attaching `Authorization: Bearer <jwt>` from localStorage, response interceptor handling 401 → call `POST /api/auth/refresh-token` → update stored JWT → retry original request once → redirect to `/login` on second failure
+    - _Requirements: 13.5_
+  - [ ]* 10.3 Write property test for token refresh interceptor retry (Property 40)
+    - **Property 40: Token refresh interceptor retries original request**
+    - **Validates: Requirements 13.5**
+  - [ ] 10.4 Create `src/context/AuthContext.jsx`: React context with `{ user, jwt, role, login(jwt, refreshToken, role, userId), logout() }`; persist JWT and refreshToken to localStorage; expose `useAuth()` hook
+    - _Requirements: 13.2, 13.5_
+  - [ ] 10.5 Create `src/components/ProtectedRoute.jsx`: reads `role` from `AuthContext`; redirects to `/login` if unauthenticated or role mismatch; wraps children otherwise
+    - _Requirements: 14.1, 15.1, 16.1_
+  - [ ] 10.6 Rewrite `src/App.js` with React Router v6 `<Routes>`: `/` → `LandingPage`, `/login` → `LoginPage`, `/register` → `RegisterPage`, `/admin` → `<ProtectedRoute role="ADMIN"><AdminDashboard/>`, `/judge` → `<ProtectedRoute role="JUDGE"><JudgeDashboard/>`, `/participant` → `<ProtectedRoute role="PARTICIPANT"><ParticipantDashboard/>`
+    - _Requirements: 13.1, 14.1, 15.1, 16.1_
+
+- [ ] 11. Public pages — Landing, Login, Register
+  - [ ] 11.1 Implement `src/pages/LandingPage.jsx`: fetch `GET /api/public/active-hackathons` on mount, render a card grid of active hackathons; link to `/login` and `/register`
+    - _Requirements: 13.1_
+  - [ ] 11.2 Implement `src/pages/LoginPage.jsx`: React Hook Form + Yup schema (email required, password required); on submit call `POST /api/auth/login`, store JWT/refreshToken/role via `AuthContext.login()`, redirect to role-appropriate dashboard; display API error via toast on failure
+    - _Requirements: 13.2, 13.4_
+  - [ ] 11.3 Implement `src/pages/RegisterPage.jsx`: React Hook Form + Yup schema (firstName, lastName, email, password — no role field); on submit call `POST /api/auth/register`, redirect to `/login` on success; display API error on failure
+    - _Requirements: 13.3, 13.4_
+
+- [ ] 12. Admin dashboard
+  - [ ] 12.1 Create `src/pages/AdminDashboard.jsx` with tab navigation: Overview | Hackathons | Judges | Users | Criteria | Teams | Evaluations | Results | Audit; render the active tab's panel component
+    - _Requirements: 14.1_
+  - [ ] 12.2 Implement `OverviewPanel`: fetch summary counts (total hackathons, judges, teams, pending acceptances) and display as stat cards
+    - _Requirements: 14.2_
+  - [ ] 12.3 Implement `HackathonManagerPanel`: list hackathons in a table; inline form (React Hook Form + Yup) for create/edit with fields name, description, startDate, endDate, isActive; delete button with confirmation; call admin hackathon endpoints
+    - _Requirements: 14.3_
+  - [ ] 12.4 Implement `JudgeManagementPanel`: list judges; form to create judge (email + password); delete button; call `POST /api/admin/judges`, `GET /api/admin/judges`, `DELETE /api/admin/judges/{id}`
+    - _Requirements: 14.4_
+  - [ ] 12.5 Implement `UserManagerPanel`: fetch `GET /api/admin/users` and display all users with role and createdAt in a table
+    - _Requirements: 14.5_
+  - [ ] 12.6 Implement `CriteriaManagerPanel`: select hackathon from dropdown; list criteria; form to create/edit criteria (name, description, weight, maxScore, displayOrder); delete button; call criteria endpoints
+    - _Requirements: 14.6_
+  - [ ] 12.7 Implement `TeamManagerPanel`: list all teams with members, submission links, and acceptanceStatus; Accept/Reject buttons calling `PUT /api/admin/teams/{id}/accept` and `PUT /api/admin/teams/{id}/reject`
+    - _Requirements: 14.7_
+  - [ ] 12.8 Implement `EvaluationMonitorPanel`: fetch `GET /api/admin/analytics/{hackathonId}` and display completion status per judge and per team in a grid
+    - _Requirements: 14.8_
+  - [ ] 12.9 Implement `ResultsGeneratorPanel`: display ranked leaderboard table; "Export CSV" button calling `GET /api/admin/export/{hackathonId}` and triggering browser download
+    - _Requirements: 14.9_
+  - [ ] 12.10 Implement `AuditViewerPanel`: paginated table of audit log entries; filter controls for userId, action type, dateFrom, dateTo; call `GET /api/admin/audit-logs` with query params
+    - _Requirements: 14.10_
+
+- [ ] 13. Judge dashboard
+  - [ ] 13.1 Create `src/pages/JudgeDashboard.jsx` with tab navigation: Team Acceptance | Assigned Teams | Evaluation Form | My Evaluations | Leaderboard
+    - _Requirements: 15.1_
+  - [ ] 13.2 Implement `JudgeTeamAcceptancePanel`: fetch `GET /api/judge/teams`; display teams with acceptanceStatus; Accept/Reject buttons calling judge team endpoints
+    - _Requirements: 15.2_
+  - [ ] 13.3 Implement `AssignedTeamsPanel`: fetch `GET /api/judge/assignments`; list ACCEPTED assigned teams with team name, hackathon, and member count
+    - _Requirements: 15.3_
+  - [ ] 13.4 Implement `EvaluationFormPanel`: select team from assigned list; fetch criteria for the hackathon; render one numeric input per criterion (0 to maxScore) and a remarks textarea; submit via `POST /api/judge/evaluations` or `PUT /api/judge/evaluations/{id}` if evaluation exists; show inline validation errors
+    - _Requirements: 15.4_
+  - [ ] 13.5 Implement `MyEvaluationsPanel`: fetch `GET /api/judge/evaluations`; display submitted evaluations grouped by team with scores and remarks
+    - _Requirements: 15.5_
+  - [ ] 13.6 Implement `JudgeLeaderboardPanel`: fetch `GET /api/judge/leaderboard`; render read-only ranked table with rank, team name, weighted score
+    - _Requirements: 15.6_
+
+- [ ] 14. Participant dashboard
+  - [ ] 14.1 Create `src/pages/ParticipantDashboard.jsx` with tab navigation: Team Browser | Join Requests | Team Profile | Members | Project Submission | My Scores | Leaderboard; show Join Requests tab only when the authenticated user is the team lead
+    - _Requirements: 16.1, 16.4_
+  - [ ] 14.2 Implement `TeamBrowserPanel`: fetch `GET /api/public/teams/{hackathonId}`; display each team as a card showing team name, ID, and member count as "N/4"; "Request to Join" button calls `POST /api/participant/team/join`; disable button if participant is already on a team
+    - _Requirements: 16.2, 16.3_
+  - [ ]* 14.3 Write unit test for TeamBrowser member count display format
+    - Test that member count renders as "N/4" for various N values
+    - _Requirements: 16.2_
+  - [ ] 14.4 Implement `JoinRequestsPanel` (team lead only): fetch `GET /api/participant/team/join-requests`; list pending requests with requester name; Accept/Reject buttons calling the join-request endpoints
+    - _Requirements: 16.4_
+  - [ ] 14.5 Implement `TeamProfilePanel`: if no team exists, show create-team form (React Hook Form + Yup, team name required); if team exists and user is lead, show edit form; call `POST /api/participant/team` or update endpoint
+    - _Requirements: 16.5_
+  - [ ] 14.6 Implement `TeamMembersPanel`: list current members; "Remove" button (team lead only) calling `DELETE /api/participant/team/members/{userId}`
+    - _Requirements: 16.5 (members)_
+  - [ ] 14.7 Implement `ProjectSubmissionPanel`: React Hook Form + Yup (URL validation for GitHub and demo URLs); submit via `PUT /api/participant/team/submission`; show current saved URLs
+    - _Requirements: 16.6_
+  - [ ] 14.8 Implement `MyScoresPanel`: fetch `GET /api/participant/scores`; display per-criteria scores and judge remarks in a table
+    - _Requirements: 16.7_
+  - [ ] 14.9 Implement `ParticipantLeaderboardPanel`: fetch `GET /api/participant/leaderboard`; render ranked table with rank, team name, weighted score
+    - _Requirements: 16.8_
+
+- [ ] 15. Checkpoint — ensure all frontend tests pass
+  - Ensure all tests pass, ask the user if questions arise.
+
+- [ ] 16. Property-based tests — frontend (fast-check)
+  - [ ]* 16.1 Write fast-check property test for leaderboard sort order (Property 33)
+    - **Property 33: Leaderboard entries are sorted by weighted score descending**
+    - **Validates: Requirements 8.2, 8.3**
+    - `// Feature: verdict-sphere, Property 33: Leaderboard is sorted descending by weighted score with innovation tie-break`
+  - [ ]* 16.2 Write fast-check property test for token refresh interceptor retry (Property 40)
+    - **Property 40: Token refresh interceptor retries original request**
+    - **Validates: Requirements 13.5**
+    - `// Feature: verdict-sphere, Property 40: Token refresh interceptor retries original request`
+  - [ ]* 16.3 Write fast-check property test for RegisterPage has no role field (Property 37 / Req 13.3)
+    - Test that the rendered RegisterPage form contains no role selection input for any generated set of props
+    - **Validates: Requirements 13.3**
+
+- [ ] 17. Final checkpoint — full stack integration
+  - Ensure all backend and frontend tests pass. Verify that the React app can reach the Spring Boot API (CORS configured in `SecurityFilterChain`). Ask the user if questions arise.
+
+## Notes
+
+- Tasks marked with `*` are optional and can be skipped for a faster MVP
+- Each task references specific requirements for traceability
+- Property tests use jqwik on the backend (`@Property(tries=100)`) and fast-check on the frontend (`numRuns: 100`)
+- Each property test must include the comment tag: `// Feature: verdict-sphere, Property N: <property_text>`
+- Checkpoints ensure incremental validation before moving to the next phase

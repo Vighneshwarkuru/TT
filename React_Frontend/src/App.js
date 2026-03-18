@@ -1,24 +1,27 @@
-import { BrowserRouter, Link, Route, Routes } from "react-router-dom";
-import Register from "./Register";
-import Login from "./Login";
-import Home from "./Home";
-import "./App.css";
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
+import LandingPage from './pages/LandingPage';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
+import AdminDashboard from './pages/AdminDashboard';
+import JudgeDashboard from './pages/JudgeDashboard';
+import ParticipantDashboard from './pages/ParticipantDashboard';
 
 function App() {
   return (
-    <BrowserRouter>
-      <h3>This is landing page</h3>
-
-      <Link to="/Register">Register</Link>{" | "}
-      <Link to="/Login">Login</Link>{" | "}
-  
-
-      <Routes>
-        <Route path="/Register" element={<Register />} />
-        <Route path="/Login" element={<Login />} />
-        <Route path="/h" element={<Home />} />
-      </Routes>
-    </BrowserRouter>
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/admin" element={<ProtectedRoute role="ADMIN"><AdminDashboard /></ProtectedRoute>} />
+          <Route path="/judge" element={<ProtectedRoute role="JUDGE"><JudgeDashboard /></ProtectedRoute>} />
+          <Route path="/participant" element={<ProtectedRoute role="PARTICIPANT"><ParticipantDashboard /></ProtectedRoute>} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
 

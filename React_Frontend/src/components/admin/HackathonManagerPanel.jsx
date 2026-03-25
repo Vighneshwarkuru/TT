@@ -1,9 +1,20 @@
 import { useEffect, useState } from 'react';
 import axiosInstance from '../../api/axiosInstance';
 
-const empty = { name: '', description: '', startDate: '', endDate: '', registrationDeadline: '', isActive: false };
+const empty = { 
+  name: '', 
+  description: '', 
+  startDate: '', 
+  endDate: '', 
+  registrationDeadline: '', 
+  isActive: false,
+  extraQuestion1Label: '',
+  extraQuestion2Label: '',
+  extraQuestion3Label: ''
+};
 
 const s = {
+  // ... existing styles ... (I'll reuse the style object from the file)
   title: { fontSize: 22, fontWeight: 600, marginBottom: 16 },
   form: { background: '#fff', border: '1px solid #e0e0e0', borderRadius: 8, padding: 20, marginBottom: 24 },
   formTitle: { fontSize: 16, fontWeight: 600, marginBottom: 14 },
@@ -21,6 +32,7 @@ const s = {
   td: { padding: '10px 12px', fontSize: 13, borderBottom: '1px solid #f0f0f0' },
   error: { color: '#d32f2f', fontSize: 13, marginBottom: 10 },
   checkRow: { display: 'flex', alignItems: 'center', gap: 8 },
+  labelSection: { marginTop: 16, paddingTop: 16, borderTop: '1px solid #eee' }
 };
 
 export default function HackathonManagerPanel() {
@@ -57,7 +69,17 @@ export default function HackathonManagerPanel() {
 
   const handleEdit = h => {
     setEditId(h.id);
-    setForm({ name: h.name, description: h.description || '', startDate: h.startDate || '', endDate: h.endDate || '', registrationDeadline: h.registrationDeadline || '', isActive: h.isActive || false });
+    setForm({ 
+      name: h.name, 
+      description: h.description || '', 
+      startDate: h.startDate || '', 
+      endDate: h.endDate || '', 
+      registrationDeadline: h.registrationDeadline || '', 
+      isActive: h.isActive || false,
+      extraQuestion1Label: h.extraQuestion1Label || '',
+      extraQuestion2Label: h.extraQuestion2Label || '',
+      extraQuestion3Label: h.extraQuestion3Label || ''
+    });
   };
 
   const handleDelete = async id => {
@@ -99,6 +121,25 @@ export default function HackathonManagerPanel() {
               <input style={s.input} type="date" name="registrationDeadline" value={form.registrationDeadline} onChange={handleChange} />
             </div>
           </div>
+
+          <div style={s.labelSection}>
+            <div style={{...s.formTitle, fontSize: 14}}>Custom Question Labels (Optional)</div>
+            <div style={s.row}>
+                <div style={{ ...s.field, flex: 1 }}>
+                    <label style={s.label}>Question 1</label>
+                    <input style={s.input} name="extraQuestion1Label" value={form.extraQuestion1Label} onChange={handleChange} placeholder="e.g. Domain of Interest" />
+                </div>
+                <div style={{ ...s.field, flex: 1 }}>
+                    <label style={s.label}>Question 2</label>
+                    <input style={s.input} name="extraQuestion2Label" value={form.extraQuestion2Label} onChange={handleChange} placeholder="e.g. Tech Stack" />
+                </div>
+                <div style={{ ...s.field, flex: 1 }}>
+                    <label style={s.label}>Question 3</label>
+                    <input style={s.input} name="extraQuestion3Label" value={form.extraQuestion3Label} onChange={handleChange} placeholder="e.g. Link to Resume" />
+                </div>
+            </div>
+          </div>
+
           <div style={{ ...s.field, ...s.checkRow }}>
             <input type="checkbox" name="isActive" checked={form.isActive} onChange={handleChange} id="isActive" />
             <label htmlFor="isActive" style={{ fontSize: 13, fontWeight: 600 }}>Active</label>

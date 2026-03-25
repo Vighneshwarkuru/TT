@@ -3,14 +3,12 @@ import axiosInstance from '../../api/axiosInstance';
 import { useForm } from 'react-hook-form';
 import { useAuth } from '../../context/AuthContext';
 
-export function TeamBrowserPanel() {
-    const [hackathons, setHackathons] = useState([]);
+export function TeamBrowserPanel({ hackathons = [] }) {
     const [selectedHackathon, setSelectedHackathon] = useState('');
     const [teams, setTeams] = useState([]);
     const [myTeam, setMyTeam] = useState(null);
 
     useEffect(() => {
-        axiosInstance.get('/api/public/active-hackathons').then(r => setHackathons(r.data)).catch(() => { });
         axiosInstance.get('/api/participant/team').then(r => setMyTeam(r.data)).catch(() => setMyTeam(null));
     }, []);
 
@@ -22,7 +20,7 @@ export function TeamBrowserPanel() {
 
     const requestJoin = async (teamId) => {
         try {
-            await axiosInstance.post(`/api/participant/team/join?teamId=${teamId}`);
+            await axiosInstance.post('/api/participant/team/join', { teamId });
             alert('Join request sent!');
         } catch (e) {
             alert(e.response?.data?.message || 'Error sending join request. You might already have a pending request or be on a team.');
@@ -45,7 +43,7 @@ export function TeamBrowserPanel() {
                     {teams.map(t => (
                         <div key={t.id} className="border p-4 rounded bg-gray-50 flex flex-col justify-between">
                             <div>
-                                <h3 className="font-bold text-lg text-indigo-700">{t.name}</h3>
+                                <h3 className="font-bold text-lg text-indigo-700">{t.teamName}</h3>
                                 <p className="text-sm text-gray-600 mb-2">Team ID: {t.id}</p>
                                 <p className="text-sm font-semibold mb-4">Members: {t.memberCount}/{t.maxCapacity || 4}</p>
                             </div>
@@ -95,8 +93,8 @@ export function JoinRequestsPanel() {
                 <tbody>
                     {requests.map(r => (
                         <tr key={r.id} className="border-b">
-                            <td className="py-2">{r.userFirstName} {r.userLastName}</td>
-                            <td>{r.userEmail}</td>
+                            <td className="py-2">{r.requesterFirstName} {r.requesterLastName}</td>
+                            <td>{r.requesterEmail}</td>
                             <td>
                                 <span className={`px-2 py-1 text-xs rounded ${r.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' : r.status === 'ACCEPTED' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                                     {r.status}
@@ -119,19 +117,23 @@ export function JoinRequestsPanel() {
     );
 }
 
-export function TeamProfilePanel() {
+export function TeamProfilePanel({ hackathons = [] }) {
     const [myTeam, setMyTeam] = useState(null);
-    const [hackathons, setHackathons] = useState([]);
     const { register, handleSubmit } = useForm();
     const { user } = useAuth();
 
     const load = () => {
-        axiosInstance.get('/api/participant/team').then(r => setMyTeam(r.data)).catch(() => setMyTeam(null));
+        console.log('TeamProfilePanel loading team info...');
+        axiosInstance.get('/api/participant/team')
+            .then(r => setMyTeam(r.data))
+            .catch(err => {
+                console.log('TeamProfile - No team found:', err.response?.status);
+                setMyTeam(null);
+            });
     };
 
     useEffect(() => {
         load();
-        axiosInstance.get('/api/public/active-hackathons').then(r => setHackathons(r.data)).catch(() => { });
     }, []);
 
     const createTeam = async (data) => {
@@ -147,7 +149,7 @@ export function TeamProfilePanel() {
     if (myTeam) {
         return (
             <div className="p-6 bg-white shadow rounded border border-gray-200">
-                <h2 className="text-2xl font-bold mb-4 text-indigo-700">{myTeam.name}</h2>
+                <h2 className="text-2xl font-bold mb-4 text-indigo-700">{myTeam.teamName}</h2>
                 <div className="grid grid-cols-2 gap-4 mb-4">
                     <div><p className="text-sm text-gray-500 font-semibold">Hackathon ID</p><p className="text-lg">{myTeam.hackathonId}</p></div>
                     <div>
@@ -158,7 +160,7 @@ export function TeamProfilePanel() {
                     </div>
                     <div className="col-span-2">
                         <p className="text-sm text-gray-500 font-semibold">Team Created By</p>
-                        <p className="text-md">{myTeam.creatorId === user?.id ? 'You (Team Lead)' : `User ID: ${myTeam.creatorId}`}</p>
+                        <p className="text-md">{myTeam.createdBy?.id === user?.id ? 'You (Team Lead)' : `User: ${myTeam.createdBy?.email || myTeam.createdBy?.id}`}</p>
                     </div>
                 </div>
             </div>
@@ -178,7 +180,7 @@ export function TeamProfilePanel() {
                 </div>
                 <div className="mb-4">
                     <label className="block mb-1 font-semibold">Team Name</label>
-                    <input className="border p-2 w-full rounded" {...register('name', { required: true })} />
+                    <input className="border p-2 w-full rounded" {...register('teamName', { required: true })} />
                 </div>
                 <button type="submit" className="bg-indigo-600 text-white px-4 py-2 w-full rounded hover:bg-indigo-700 font-semibold transition">
                     Create Team
@@ -209,7 +211,7 @@ export function TeamMembersPanel() {
 
     if (!myTeam) return <div className="p-4 text-gray-500 italic bg-white rounded shadow">You are not on a team yet.</div>;
 
-    const isLead = myTeam.creatorId === user?.id;
+    const isLead = myTeam.createdBy?.id === user?.id;
 
     return (
         <div className="p-4 bg-white shadow rounded">
@@ -218,8 +220,8 @@ export function TeamMembersPanel() {
                 {myTeam.members?.map(m => (
                     <li key={m.id} className="py-3 px-4 flex justify-between items-center hover:bg-gray-50">
                         <div>
-                            <span className="font-semibold block">{m.userEmail}</span>
-                            <span className="text-sm text-gray-500">Joined: {new Date(m.joinedAt).toLocaleDateString()}</span>
+                            <span className="font-semibold block">{m.email}</span>
+                            <span className="text-sm text-gray-500">Joined: {m.createdAt ? new Date(m.createdAt).toLocaleDateString() : 'N/A'}</span>
                         </div>
                         {isLead && m.userId !== user?.id && (
                             <button
@@ -229,7 +231,7 @@ export function TeamMembersPanel() {
                                 Remove
                             </button>
                         )}
-                        {m.userId === myTeam.creatorId && <span className="text-xs bg-indigo-100 text-indigo-800 px-2 py-1 rounded border border-indigo-200 font-semibold">Team Lead</span>}
+                        {m.id === myTeam.createdBy?.id && <span className="text-xs bg-indigo-100 text-indigo-800 px-2 py-1 rounded border border-indigo-200 font-semibold">Team Lead</span>}
                     </li>
                 ))}
             </ul>

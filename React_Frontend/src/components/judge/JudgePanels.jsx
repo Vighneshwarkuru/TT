@@ -32,7 +32,7 @@ export function JudgeTeamAcceptancePanel() {
                 <tbody>
                     {teams.map(t => (
                         <tr key={t.id} className="border-b">
-                            <td className="py-2">{t.name}</td>
+                            <td className="py-2">{t.teamName}</td>
                             <td>{t.hackathonId}</td>
                             <td>
                                 <span className={`px-2 py-1 text-sm rounded ${t.acceptanceStatus === 'ACCEPTED' ? 'bg-green-100 text-green-800' : t.acceptanceStatus === 'REJECTED' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'}`}>
@@ -40,8 +40,14 @@ export function JudgeTeamAcceptancePanel() {
                                 </span>
                             </td>
                             <td>
-                                <button onClick={() => accept(t.id)} className="mr-2 text-green-600 hover:text-green-800 font-semibold">Accept</button>
-                                <button onClick={() => reject(t.id)} className="text-red-600 hover:text-red-800 font-semibold">Reject</button>
+                                {t.acceptanceStatus === 'PENDING' ? (
+                                    <>
+                                        <button onClick={() => accept(t.id)} className="mr-2 text-green-600 hover:text-green-800 font-semibold">Accept</button>
+                                        <button onClick={() => reject(t.id)} className="text-red-600 hover:text-red-800 font-semibold">Reject</button>
+                                    </>
+                                ) : (
+                                    <span className="text-gray-400 italic text-sm">Processed</span>
+                                )}
                             </td>
                         </tr>
                     ))}
@@ -107,7 +113,7 @@ export function EvaluationFormPanel() {
             // MVP fallback: We'll assume GET /api/admin/criteria/{hackathonId} or /api/public/criteria/{hackathonId}
             // Since it's not strictly spec'd, let's use /api/admin/criteria/{hackathonId} but might throw 403.
             // Better: In Spring, we just expect the endpoint. If not, we handle error.
-            axiosInstance.get(`/api/admin/criteria/${selectedHackathon}`).then(r => setCriteria(r.data)).catch(() => setCriteria([]));
+            axiosInstance.get(`/api/public/criteria/${selectedHackathon}`).then(r => setCriteria(r.data)).catch(() => setCriteria([]));
         } else {
             setCriteria([]);
         }
@@ -151,7 +157,7 @@ export function EvaluationFormPanel() {
                     <label className="block mb-1 font-semibold">Select Assigned Team</label>
                     <select className="border p-2 w-full rounded" value={selectedTeam} onChange={e => setSelectedTeam(e.target.value)}>
                         <option value="">-- Select Team --</option>
-                        {filteredTeams.map(t => <option key={t.teamId} value={t.teamId}>{t.teamName}</option>)}
+                        {filteredTeams.map(t => <option key={t.id} value={t.id}>{t.teamName}</option>)}
                     </select>
                 </div>
             )}

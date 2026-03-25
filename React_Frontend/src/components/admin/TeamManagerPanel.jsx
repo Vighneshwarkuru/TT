@@ -23,7 +23,7 @@ export default function TeamManagerPanel() {
   const [teams, setTeams] = useState([]);
   const [error, setError] = useState('');
 
-  const load = () => axiosInstance.get('/api/admin/teams').then(r => setTeams(r.data)).catch(() => {});
+  const load = () => axiosInstance.get('/api/admin/teams').then(r => setTeams(r.data)).catch(() => { });
 
   useEffect(() => { load(); }, []);
 
@@ -72,8 +72,13 @@ export default function TeamManagerPanel() {
               <td style={s.td}>{t.demoUrl ? <a href={t.demoUrl} target="_blank" rel="noreferrer">Link</a> : '—'}</td>
               <td style={s.td}>
                 <div style={s.row}>
-                  <button style={{ ...s.btn, ...s.btnSuccess }} onClick={() => handleAccept(t.id)}>Accept</button>
-                  <button style={{ ...s.btn, ...s.btnDanger }} onClick={() => handleReject(t.id)}>Reject</button>
+                  {t.acceptanceStatus === 'PENDING' && (
+                    <>
+                      <button style={{ ...s.btn, ...s.btnSuccess }} onClick={() => handleAccept(t.id)}>Accept</button>
+                      <button style={{ ...s.btn, ...s.btnDanger }} onClick={() => handleReject(t.id)}>Reject</button>
+                    </>
+                  )}
+                  {t.acceptanceStatus !== 'PENDING' && <span style={{ fontSize: 12, color: '#777', fontStyle: 'italic' }}>No actions</span>}
                 </div>
               </td>
             </tr>

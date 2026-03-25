@@ -7,11 +7,12 @@ import RegisterPage from './pages/RegisterPage';
 import AdminDashboard from './pages/AdminDashboard';
 import JudgeDashboard from './pages/JudgeDashboard';
 import ParticipantDashboard from './pages/ParticipantDashboard';
+import HackathonPage from './pages/HackathonPage';
 
 function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
+      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
@@ -19,6 +20,7 @@ function App() {
           <Route path="/admin" element={<ProtectedRoute role="ADMIN"><AdminDashboard /></ProtectedRoute>} />
           <Route path="/judge" element={<ProtectedRoute role="JUDGE"><JudgeDashboard /></ProtectedRoute>} />
           <Route path="/participant" element={<ProtectedRoute role="PARTICIPANT"><ParticipantDashboard /></ProtectedRoute>} />
+          <Route path="/hackathon/:id" element={<ProtectedRoute><HackathonPage /></ProtectedRoute>} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

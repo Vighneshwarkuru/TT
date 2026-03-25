@@ -12,4 +12,5 @@ public interface TeamJoinRequestRepository extends JpaRepository<TeamJoinRequest
     List<TeamJoinRequest> findByTeamAndStatus(Team team, JoinRequestStatus status);
     boolean existsByTeamAndRequesterAndStatus(Team team, User requester, JoinRequestStatus status);
     List<TeamJoinRequest> findByRequesterAndStatus(User requester, JoinRequestStatus status);
+    List<TeamJoinRequest> findByTeamIn(List<Team> teams);
 }

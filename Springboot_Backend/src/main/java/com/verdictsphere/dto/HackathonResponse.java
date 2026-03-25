@@ -20,5 +20,8 @@ public class HackathonResponse {
     private LocalDate endDate;
     private LocalDate registrationDeadline;
     private boolean isActive;
+    private String extraQuestion1Label;
+    private String extraQuestion2Label;
+    private String extraQuestion3Label;
     private LocalDateTime createdAt;
 }

@@ -11,6 +11,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/judge")
@@ -20,6 +21,7 @@ public class JudgeController {
 
     private final TeamAcceptanceService teamAcceptanceService;
     private final JudgeAssignmentService judgeAssignmentService;
+    private final HackathonService hackathonService;
     private final EvaluationService evaluationService;
     private final LeaderboardService leaderboardService;
     private final UserRepository userRepository;
@@ -28,7 +30,16 @@ public class JudgeController {
 
     @GetMapping("/teams")
     public ResponseEntity<List<TeamDetailResponse>> getAllTeams() {
-        return ResponseEntity.ok(teamAcceptanceService.getAllTeams());
+        User judge = SecurityUtils.getCurrentUser(userRepository);
+        List<HackathonResponse> myHackathons = hackathonService.getHackathonsForJudge(judge);
+        List<Long> hackathonIds = myHackathons.stream().map(HackathonResponse::getId).collect(Collectors.toList());
+        return ResponseEntity.ok(teamAcceptanceService.getTeamsByHackathonIds(hackathonIds));
+    }
+
+    @GetMapping("/hackathons")
+    public ResponseEntity<List<HackathonResponse>> getMyHackathons() {
+        User judge = SecurityUtils.getCurrentUser(userRepository);
+        return ResponseEntity.ok(hackathonService.getHackathonsForJudge(judge));
     }
 
     @PutMapping("/teams/{id}/accept")

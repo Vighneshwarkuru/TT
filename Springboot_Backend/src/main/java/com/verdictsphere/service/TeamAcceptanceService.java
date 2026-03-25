@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.ArrayList;
 
 @Service
 @RequiredArgsConstructor
@@ -47,14 +48,24 @@ public class TeamAcceptanceService {
                 "Rejected team: " + team.getTeamName(), null);
     }
 
+    @Transactional(readOnly = true)
     public List<TeamDetailResponse> getAllTeams() {
         return teamRepository.findAll().stream()
                 .map(this::toDetailResponse)
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public List<TeamDetailResponse> getTeamsByHackathon(Long hackathonId) {
         return teamRepository.findByHackathonId(hackathonId).stream()
+                .map(this::toDetailResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<TeamDetailResponse> getTeamsByHackathonIds(List<Long> hackathonIds) {
+        return teamRepository.findAll().stream()
+                .filter(team -> hackathonIds.contains(team.getHackathonId()))
                 .map(this::toDetailResponse)
                 .collect(Collectors.toList());
     }
@@ -78,6 +89,11 @@ public class TeamAcceptanceService {
         return TeamDetailResponse.builder()
                 .id(team.getId())
                 .teamName(team.getTeamName())
+                .projectTitle(team.getProjectTitle())
+                .abstractContent(team.getAbstractContent())
+                .extraQuestion1(team.getExtraQuestion1())
+                .extraQuestion2(team.getExtraQuestion2())
+                .extraQuestion3(team.getExtraQuestion3())
                 .hackathonId(team.getHackathonId())
                 .createdBy(createdByResponse)
                 .acceptanceStatus(team.getAcceptanceStatus().name())
@@ -85,6 +101,16 @@ public class TeamAcceptanceService {
                 .githubUrl(team.getGithubUrl())
                 .demoUrl(team.getDemoUrl())
                 .presentationUrl(team.getPresentationUrl())
+                .members(teamMemberRepository.findByTeam(team).stream()
+                        .map(m -> UserResponse.builder()
+                                .id(m.getUser().getId())
+                                .email(m.getUser().getEmail())
+                                .firstName(m.getUser().getFirstName())
+                                .lastName(m.getUser().getLastName())
+                                .role(m.getUser().getRole().name())
+                                .createdAt(m.getUser().getCreatedAt())
+                                .build())
+                        .collect(Collectors.toList()))
                 .createdAt(team.getCreatedAt())
                 .build();
     }

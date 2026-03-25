@@ -45,7 +45,9 @@ public class AuditService {
         auditLogRepository.save(entry);
     }
 
+    @Transactional(readOnly = true)
     public Page<AuditLogResponse> getAuditLogs(Long userId, String action,
+                                                String entityType, Long entityId,
                                                 LocalDateTime dateFrom, LocalDateTime dateTo,
                                                 Pageable pageable) {
         Specification<AuditLog> spec = (root, query, cb) -> {
@@ -56,6 +58,12 @@ public class AuditService {
             }
             if (action != null && !action.isBlank()) {
                 predicates.add(cb.equal(root.get("action"), action));
+            }
+            if (entityType != null && !entityType.isBlank()) {
+                predicates.add(cb.equal(root.get("entityType"), entityType));
+            }
+            if (entityId != null) {
+                predicates.add(cb.equal(root.get("entityId"), entityId));
             }
             if (dateFrom != null) {
                 predicates.add(cb.greaterThanOrEqualTo(root.get("createdAt"), dateFrom));

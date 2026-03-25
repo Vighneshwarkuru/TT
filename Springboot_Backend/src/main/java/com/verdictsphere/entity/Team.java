@@ -22,6 +22,16 @@ public class Team {
     private String teamName;
 
     @Column(nullable = false)
+    private String projectTitle;
+
+    @Column(columnDefinition = "TEXT")
+    private String abstractContent;
+
+    private String extraQuestion1;
+    private String extraQuestion2;
+    private String extraQuestion3;
+
+    @Column(nullable = false)
     private Long hackathonId;
 
     @ManyToOne(fetch = FetchType.LAZY)

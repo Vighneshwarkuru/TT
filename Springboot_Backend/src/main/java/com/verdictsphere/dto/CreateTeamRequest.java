@@ -11,4 +11,10 @@ public class CreateTeamRequest {
 
     @NotNull(message = "Hackathon ID is required")
     private Long hackathonId;
+
+    private String projectTitle;
+    private String abstractContent;
+    private String extraQuestion1;
+    private String extraQuestion2;
+    private String extraQuestion3;
 }

@@ -35,7 +35,11 @@ public class ParticipantController {
     @GetMapping("/team")
     public ResponseEntity<TeamDetailResponse> getMyTeam() {
         User participant = SecurityUtils.getCurrentUser(userRepository);
-        return ResponseEntity.ok(teamService.getMyTeam(participant));
+        TeamDetailResponse team = teamService.getMyTeam(participant);
+        if (team == null) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(team);
     }
 
     // ── Join requests ─────────────────────────────────────────────────────────

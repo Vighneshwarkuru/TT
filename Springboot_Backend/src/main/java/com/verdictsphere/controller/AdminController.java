@@ -16,7 +16,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 @RestController
@@ -86,6 +88,25 @@ public class AdminController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping("/hackathons/{id}/judges/{judgeId}")
+    public ResponseEntity<Void> assignJudge(@PathVariable Long id, @PathVariable Long judgeId) {
+        User admin = SecurityUtils.getCurrentUser(userRepository);
+        hackathonService.assignJudge(id, judgeId, admin);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/hackathons/{id}/judges/{judgeId}")
+    public ResponseEntity<Void> removeJudge(@PathVariable Long id, @PathVariable Long judgeId) {
+        User admin = SecurityUtils.getCurrentUser(userRepository);
+        hackathonService.removeJudge(id, judgeId, admin);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/hackathons/{id}/judges")
+    public ResponseEntity<List<UserResponse>> getJudgesByHackathon(@PathVariable Long id) {
+        return ResponseEntity.ok(hackathonService.getJudgesByHackathon(id));
+    }
+
     // ── Criteria management ───────────────────────────────────────────────────
 
     @PostMapping("/criteria")
@@ -118,6 +139,11 @@ public class AdminController {
     @GetMapping("/teams")
     public ResponseEntity<List<TeamDetailResponse>> getAllTeams() {
         return ResponseEntity.ok(teamAcceptanceService.getAllTeams());
+    }
+
+    @GetMapping("/teams/hackathon/{hackathonId}")
+    public ResponseEntity<List<TeamDetailResponse>> getTeamsByHackathon(@PathVariable Long hackathonId) {
+        return ResponseEntity.ok(teamAcceptanceService.getTeamsByHackathon(hackathonId));
     }
 
     @PutMapping("/teams/{id}/accept")
@@ -177,9 +203,15 @@ public class AdminController {
     public ResponseEntity<Page<AuditLogResponse>> getAuditLogs(
             @RequestParam(required = false) Long userId,
             @RequestParam(required = false) String action,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateFrom,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateTo,
+            @RequestParam(required = false) String entityType,
+            @RequestParam(required = false) Long entityId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateTo,
             Pageable pageable) {
-        return ResponseEntity.ok(auditService.getAuditLogs(userId, action, dateFrom, dateTo, pageable));
+        
+        LocalDateTime from = dateFrom != null ? dateFrom.atStartOfDay() : null;
+        LocalDateTime to = dateTo != null ? dateTo.atTime(LocalTime.MAX) : null;
+        
+        return ResponseEntity.ok(auditService.getAuditLogs(userId, action, entityType, entityId, from, to, pageable));
     }
 }

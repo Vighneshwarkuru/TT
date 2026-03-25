@@ -32,6 +32,11 @@ public class TeamService {
         Team team = Team.builder()
                 .teamName(req.getTeamName())
                 .hackathonId(req.getHackathonId())
+                .projectTitle(req.getProjectTitle())
+                .abstractContent(req.getAbstractContent())
+                .extraQuestion1(req.getExtraQuestion1())
+                .extraQuestion2(req.getExtraQuestion2())
+                .extraQuestion3(req.getExtraQuestion3())
                 .createdBy(participant)
                 .acceptanceStatus(AcceptanceStatus.PENDING)
                 .build();
@@ -50,11 +55,14 @@ public class TeamService {
         return toDetailResponse(team);
     }
 
+    @Transactional(readOnly = true)
     public TeamDetailResponse getMyTeam(User participant) {
         List<TeamMember> memberships = teamMemberRepository.findByUser(participant);
         if (memberships.isEmpty()) {
-            throw new EntityNotFoundException("You are not a member of any team.");
+            return null;
         }
+        // If multiple memberships exist, try to find one for an active hackathon context if possible
+        // For now, we return the first one as per existing logic, but with transaction safety.
         return toDetailResponse(memberships.get(0).getTeam());
     }
 
@@ -89,13 +97,17 @@ public class TeamService {
         return toJoinRequestResponse(joinRequest);
     }
 
+    @Transactional(readOnly = true)
     public List<JoinRequestResponse> getJoinRequestsForMyTeam(User teamLead) {
-        List<Team> myTeams = teamRepository.findByCreatedBy(teamLead);
-        if (myTeams.isEmpty()) {
+        // Find teams where this user is a member AND is the creator (lead)
+        List<Team> myLeadTeams = teamRepository.findByCreatedBy(teamLead);
+        if (myLeadTeams.isEmpty()) {
             throw new EntityNotFoundException("You have not created any team.");
         }
-        Team team = myTeams.get(0);
-        return teamJoinRequestRepository.findByTeamAndStatus(team, JoinRequestStatus.PENDING).stream()
+        
+        // Return join requests for all teams created by this user
+        return teamJoinRequestRepository.findByTeamIn(myLeadTeams).stream()
+                .filter(req -> req.getStatus() == JoinRequestStatus.PENDING)
                 .map(this::toJoinRequestResponse)
                 .collect(Collectors.toList());
     }
@@ -109,7 +121,12 @@ public class TeamService {
             throw new AccessForbiddenException("You do not have permission to manage this team's join requests.");
         }
 
+
         Team team = request.getTeam();
+        
+        // Validate requester not already on a team in this hackathon
+        validateNotAlreadyOnTeam(team.getHackathonId(), request.getRequester());
+        
         long memberCount = teamMemberRepository.countByTeam(team);
         if (memberCount >= MAX_TEAM_SIZE) {
             throw new TeamFullException("Team is full");
@@ -158,7 +175,8 @@ public class TeamService {
         teamMemberRepository.delete(toRemove);
 
         auditService.log(teamLead.getId(), "REMOVE_MEMBER", "TEAM_MEMBER", userId,
-                "Team lead " + teamLead.getEmail() + " removed user " + userId + " from team " + team.getTeamName(), null);
+                "Team lead " + teamLead.getEmail() + " removed user " + userId + " from team " + team.getTeamName(),
+                null);
     }
 
     // ── Project submission ────────────────────────────────────────────────────
@@ -173,6 +191,7 @@ public class TeamService {
 
         validateUrl(req.getGithubUrl(), "GitHub URL");
         validateUrl(req.getDemoUrl(), "Demo URL");
+        validateUrl(req.getPresentationUrl(), "Presentation URL");
 
         team.setGithubUrl(req.getGithubUrl());
         team.setDemoUrl(req.getDemoUrl());
@@ -184,6 +203,7 @@ public class TeamService {
 
     // ── Public team listing ───────────────────────────────────────────────────
 
+    @Transactional(readOnly = true)
     public List<TeamSummary> getTeamSummaries(Long hackathonId) {
         return teamRepository.findByHackathonId(hackathonId).stream()
                 .map(team -> TeamSummary.builder()
@@ -213,9 +233,9 @@ public class TeamService {
                     .orElseThrow(() -> new EntityNotFoundException("Team not found with id: " + req.getTeamId()));
         }
         if (req.getTeamName() != null && !req.getTeamName().isBlank()) {
-            List<Team> teams = teamRepository.findAll().stream()
-                    .filter(t -> t.getTeamName().equalsIgnoreCase(req.getTeamName()))
-                    .collect(Collectors.toList());
+            // If we have a hackathonId in the request (hypothetically), we should use it.
+            // Since req doesn't have it, we use the first one found but log a warning if multiple exist.
+            List<Team> teams = teamRepository.findByTeamNameIgnoreCase(req.getTeamName());
             if (teams.isEmpty()) {
                 throw new EntityNotFoundException("Team not found with name: " + req.getTeamName());
             }
@@ -251,6 +271,11 @@ public class TeamService {
         return TeamDetailResponse.builder()
                 .id(team.getId())
                 .teamName(team.getTeamName())
+                .projectTitle(team.getProjectTitle())
+                .abstractContent(team.getAbstractContent())
+                .extraQuestion1(team.getExtraQuestion1())
+                .extraQuestion2(team.getExtraQuestion2())
+                .extraQuestion3(team.getExtraQuestion3())
                 .hackathonId(team.getHackathonId())
                 .createdBy(createdByResponse)
                 .acceptanceStatus(team.getAcceptanceStatus().name())
@@ -258,6 +283,16 @@ public class TeamService {
                 .githubUrl(team.getGithubUrl())
                 .demoUrl(team.getDemoUrl())
                 .presentationUrl(team.getPresentationUrl())
+                .members(teamMemberRepository.findByTeam(team).stream()
+                        .map(m -> UserResponse.builder()
+                                .id(m.getUser().getId())
+                                .email(m.getUser().getEmail())
+                                .firstName(m.getUser().getFirstName())
+                                .lastName(m.getUser().getLastName())
+                                .role(m.getUser().getRole().name())
+                                .createdAt(m.getUser().getCreatedAt())
+                                .build())
+                        .collect(Collectors.toList()))
                 .createdAt(team.getCreatedAt())
                 .build();
     }

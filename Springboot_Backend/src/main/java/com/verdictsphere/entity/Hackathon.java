@@ -35,6 +35,10 @@ public class Hackathon {
     @Column(nullable = false)
     private boolean isActive = true;
 
+    private String extraQuestion1Label;
+    private String extraQuestion2Label;
+    private String extraQuestion3Label;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by")
     private User createdBy;

@@ -44,10 +44,7 @@ services:
     staticPublishPath: build
     envVars:
       - key: REACT_APP_API_URL
-        fromService:
-          name: verdictsphere-backend
-          type: web
-          property: url
+        value: https://verdictsphere-backend.onrender.com
     routes:
       - type: rewrite
         source: /*

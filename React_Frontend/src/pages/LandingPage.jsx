@@ -26,8 +26,18 @@ export default function LandingPage() {
 
   useEffect(() => {
     axiosInstance.get('/api/public/active-hackathons')
-      .then(res => setHackathons(res.data))
-      .catch(() => setHackathons([]))
+      .then(res => {
+        if (Array.isArray(res.data)) {
+          setHackathons(res.data);
+        } else {
+          console.error('Expected array for hackathons, got:', res.data);
+          setHackathons([]);
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to fetch hackathons:', err);
+        setHackathons([]);
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -46,9 +56,7 @@ export default function LandingPage() {
         <h2 style={styles.sectionTitle}>Active Hackathons</h2>
         {loading ? (
           <p>Loading...</p>
-        ) : hackathons.length === 0 ? (
-          <p style={styles.empty}>No active hackathons at the moment.</p>
-        ) : (
+        ) : Array.isArray(hackathons) && hackathons.length > 0 ? (
           <div style={styles.grid}>
             {hackathons.map(h => (
               <div key={h.id} style={styles.card}>
@@ -62,6 +70,8 @@ export default function LandingPage() {
               </div>
             ))}
           </div>
+        ) : (
+          <p style={styles.empty}>No active hackathons at the moment.</p>
         )}
       </div>
     </div>

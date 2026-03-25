@@ -2,8 +2,7 @@ services:
   # Backend Web Service (Spring Boot)
   - type: web
     name: verdictsphere-backend
-    env: java
-    region: singapore
+    runtime: java
     plan: free
     rootDirectory: Springboot_Backend
     buildCommand: ./mvnw clean install -DskipTests
@@ -19,10 +18,8 @@ services:
         generateValue: true
 
   # Frontend Static Site (React)
-  - type: web
+  - type: static_site
     name: verdictsphere-frontend
-    env: static
-    region: singapore
     plan: free
     rootDirectory: React_Frontend
     buildCommand: npm install && npm run build

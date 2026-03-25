@@ -47,7 +47,7 @@ services:
         fromService:
           name: verdictsphere-backend
           type: web
-          property: host
+          property: url
     routes:
       - type: rewrite
         source: /*

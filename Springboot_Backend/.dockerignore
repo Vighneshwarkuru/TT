@@ -1,0 +1,7 @@
+# Ignore everything that doesn't need to be in the Docker build context
+target/
+*.iml
+.idea/
+.mvn/wrapper/maven-wrapper.jar
+!.mvn/wrapper/maven-wrapper.properties
+*.log

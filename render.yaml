@@ -19,7 +19,6 @@ services:
   - type: web
     name: verdictsphere-frontend
     runtime: static
-    plan: free
     rootDir: React_Frontend
     buildCommand: npm install && npm run build
     staticPublishPath: build

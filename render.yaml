@@ -12,10 +12,18 @@ services:
     plan: free
     rootDir: Springboot_Backend
     envVars:
-      - key: SPRING_DATASOURCE_URL
+      - key: DB_HOST
         fromDatabase:
           name: verdictsphere-db
-          property: connectionString
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: verdictsphere-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: verdictsphere-db
+          property: database
       - key: SPRING_DATASOURCE_USERNAME
         fromDatabase:
           name: verdictsphere-db

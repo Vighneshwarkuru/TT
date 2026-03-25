@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const axiosInstance = axios.create({
-  baseURL: 'http://localhost:8080',
+  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:8080',
 });
 
 // Request interceptor: attach JWT
@@ -46,7 +46,8 @@ axiosInstance.interceptors.response.use(
         return Promise.reject(error);
       }
       try {
-        const res = await axios.post('http://localhost:8080/api/auth/refresh-token', { refreshToken });
+        const apiBase = process.env.REACT_APP_API_URL || 'http://localhost:8080';
+        const res = await axios.post(`${apiBase}/api/auth/refresh-token`, { refreshToken });
         const newJwt = res.data.jwt;
         localStorage.setItem('jwt', newJwt);
         processQueue(null, newJwt);

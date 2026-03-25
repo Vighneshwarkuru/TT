@@ -40,30 +40,39 @@ export default function OverviewPanel() {
   ];
 
   return (
-    <div style={{ animation: 'fadeIn 0.4s ease-out' }}>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.5rem', marginBottom: '2.5rem' }}>
+    <div style={{ animation: 'fadeIn 0.5s ease-out' }}>
+      <header style={{ marginBottom: '2.5rem' }}>
+          <h3 style={{ fontSize: '1.25rem', fontWeight: 800, letterSpacing: '-0.025em' }}>Platform Telemetry</h3>
+      </header>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '2rem', marginBottom: '4rem' }}>
         {loading ? (
           [1,2,3,4].map(i => (
-            <div key={i} className="card" style={{ height: '140px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-soft)', border: 'none' }}>
-              <div className="shimmer" style={{ width: '40px', height: '40px', borderRadius: '50%' }}></div>
+            <div key={i} className="card" style={{ height: '160px', border: 'none', background: 'var(--bg-soft)' }}>
+              <div className="shimmer" style={{ width: '100%', height: '100%', borderRadius: 'var(--radius)' }}></div>
             </div>
           ))
         ) : (
           items.map(item => (
-            <div key={item.label} className="card" style={{ padding: '1.75rem', display: 'flex', flexDirection: 'column', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
-              <div style={{ position: 'absolute', top: '1rem', right: '1.25rem', fontSize: '1.5rem', opacity: 0.1, fontWeight: 900 }}>{item.icon}</div>
-              <div style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--accent)', lineHeight: 1, marginBottom: '0.5rem' }}>{item.value}</div>
-              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{item.label}</div>
+            <div key={item.label} className="card" style={{ padding: '2.25rem', display: 'flex', flexDirection: 'column', justifyContent: 'center', position: 'relative', overflow: 'hidden', transition: 'transform 0.2s' }}>
+              <div style={{ position: 'absolute', top: '1.25rem', right: '1.5rem', fontSize: '1.75rem', opacity: 0.08, fontWeight: 900 }}>{item.icon}</div>
+              <div style={{ fontSize: '3rem', fontWeight: 800, color: 'var(--accent)', lineHeight: 1, marginBottom: '0.75rem', letterSpacing: '-0.04em' }}>{item.value}</div>
+              <div style={{ fontSize: '0.75rem', fontWeight: 900, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>{item.label}</div>
             </div>
           ))
         )}
       </div>
 
-      <div className="card" style={{ padding: '2rem', background: 'var(--bg-soft)', border: 'none' }}>
-        <h3 style={{ fontSize: '1.125rem', fontWeight: 700, marginBottom: '1rem' }}>Platform Status</h3>
-        <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', lineHeight: 1.6 }}>
-          All systems operational. The synchronization engine is monitoring {stats.teams} team deployments across {stats.hackathons} active competitions. 
-          {stats.pendingTeams > 0 && ` There are ${stats.pendingTeams} teams awaiting administrative approval.`}
+      <div className="card" style={{ padding: '2.5rem', background: 'var(--bg-soft)', border: 'none', borderRadius: '24px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.25rem' }}>
+            <div style={{ width: '8px', height: '8px', background: 'var(--accent)', borderRadius: '50%', animation: 'ping 1.5s infinite' }}></div>
+            <h4 style={{ fontSize: '1rem', fontWeight: 800 }}>Global Status Report</h4>
+        </div>
+        <p style={{ color: 'var(--text-muted)', fontSize: '0.9375rem', lineHeight: 1.7, maxWidth: '800px', fontWeight: 500 }}>
+          All systems operational. The synchronization engine is currently monitoring {stats.teams} team deployments across {stats.hackathons} active competition clusters. 
+          {stats.pendingTeams > 0 ? (
+              <span style={{ color: 'var(--accent)', fontWeight: 700 }}> {stats.pendingTeams} strategic alliances are currently awaiting administrative authorization.</span>
+          ) : " No pending authorizations detected."}
         </p>
       </div>
     </div>

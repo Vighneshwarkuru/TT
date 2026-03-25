@@ -80,113 +80,136 @@ export default function HackathonManagerPanel() {
   };
 
   return (
-    <div style={{ animation: 'fadeIn 0.3s ease-out' }}>
-      <header style={{ marginBottom: '2.5rem' }}>
-        <h2 style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '0.5rem' }}>Competition Architect</h2>
-        <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Define and configure the parameters for judicial evaluation cycles.</p>
+    <div style={{ animation: 'fadeIn 0.4s ease-out' }}>
+      <header style={{ marginBottom: '3rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <h2 style={{ fontSize: '1.75rem', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: '0.5rem' }}>Competition Architect</h2>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.9375rem', maxWidth: '600px' }}>Define and configure the parameters for judicial evaluation cycles and participant discovery panels.</p>
+            </div>
+          </div>
       </header>
 
-      <div className="card" style={{ padding: '2rem', marginBottom: '3rem' }}>
-        <h3 style={{ fontSize: '1.125rem', fontWeight: 700, marginBottom: '2rem' }}>{editId ? 'Modify Instance' : 'Provision New Hackathon'}</h3>
+      <div className="card" style={{ padding: '2.5rem', marginBottom: '4rem' }}>
+        <header style={{ marginBottom: '2.5rem', borderBottom: '1px solid var(--bg-soft)', paddingBottom: '1.25rem' }}>
+            <h3 style={{ fontSize: '1.125rem', fontWeight: 800 }}>{editId ? 'Modify Strategy' : 'Provision New Hackathon'}</h3>
+            <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>Configure the primary registration and evaluation thresholds.</p>
+        </header>
+
         {error && (
-            <div style={{ padding: '1rem', background: 'rgba(239, 68, 68, 0.1)', color: 'var(--error)', borderRadius: '8px', fontSize: '0.875rem', fontWeight: 600, marginBottom: '2rem' }}>
+            <div style={{ padding: '1rem', background: 'rgba(239, 68, 68, 0.1)', color: 'var(--error)', borderRadius: '8px', fontSize: '0.8125rem', fontWeight: 700, marginBottom: '2.5rem', borderLeft: '4px solid var(--error)' }}>
               {error}
             </div>
         )}
-        <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '1.5rem' }}>
-          <div>
-            <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Competition Name</label>
-            <input className="input" name="name" value={form.name} onChange={handleChange} required placeholder="Global Innovation Summit 2026" />
+
+        <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '2rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+            <div style={{ gridColumn: 'span 2' }}>
+                <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.75rem', letterSpacing: '0.05em' }}>Competition Identity</label>
+                <input className="input" name="name" value={form.name} onChange={handleChange} required placeholder="Global Innovation Summit 2026" />
+            </div>
+            <div style={{ gridColumn: 'span 2' }}>
+                <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.75rem', letterSpacing: '0.05em' }}>Executive Summary</label>
+                <textarea className="input" name="description" value={form.description} onChange={handleChange} style={{ minHeight: '120px' }} placeholder="Provide a high-level overview of the competition objectives and expected outcomes..." />
+            </div>
           </div>
-          <div>
-            <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Executive Summary</label>
-            <textarea className="input" name="description" value={form.description} onChange={handleChange} style={{ minHeight: '100px' }} placeholder="Provide a high-level overview of the competition objectives..." />
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem' }}>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '2rem' }}>
             <div>
-              <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Ignition Date</label>
+              <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.75rem', letterSpacing: '0.05em' }}>Ignition Date</label>
               <input className="input" type="date" name="startDate" value={form.startDate} onChange={handleChange} required />
             </div>
             <div>
-              <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Completion Date</label>
+              <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.75rem', letterSpacing: '0.05em' }}>Completion Date</label>
               <input className="input" type="date" name="endDate" value={form.endDate} onChange={handleChange} required />
             </div>
             <div>
-              <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Registry Deadline</label>
+              <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.75rem', letterSpacing: '0.05em' }}>Registry Deadline</label>
               <input className="input" type="date" name="registrationDeadline" value={form.registrationDeadline} onChange={handleChange} />
             </div>
           </div>
 
-          <div style={{ padding: '2rem', background: 'var(--bg-soft)', borderRadius: '12px' }}>
-            <h4 style={{ fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--accent)', marginBottom: '1.5rem' }}>Governance Customization</h4>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem' }}>
+          <div style={{ padding: '2.5rem', background: 'var(--bg-soft)', borderRadius: '16px' }}>
+            <h4 style={{ fontSize: '0.75rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--accent)', marginBottom: '2rem' }}>Governance Customization</h4>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '2rem' }}>
                 <div>
-                    <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Telemetry Field #1</label>
+                    <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.75rem', letterSpacing: '0.05em' }}>Telemetry 01</label>
                     <input className="input" name="extraQuestion1Label" value={form.extraQuestion1Label} onChange={handleChange} placeholder="e.g. Primary Domain" style={{ background: 'white' }} />
                 </div>
                 <div>
-                    <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Telemetry Field #2</label>
+                    <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.75rem', letterSpacing: '0.05em' }}>Telemetry 02</label>
                     <input className="input" name="extraQuestion2Label" value={form.extraQuestion2Label} onChange={handleChange} placeholder="e.g. Technology Stack" style={{ background: 'white' }} />
                 </div>
                 <div>
-                    <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Telemetry Field #3</label>
+                    <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.75rem', letterSpacing: '0.05em' }}>Telemetry 03</label>
                     <input className="input" name="extraQuestion3Label" value={form.extraQuestion3Label} onChange={handleChange} placeholder="e.g. Portfolio Link" style={{ background: 'white' }} />
                 </div>
             </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <input type="checkbox" name="isActive" checked={form.isActive} onChange={handleChange} id="isActive" style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: 'var(--accent)' }} />
-            <label htmlFor="isActive" style={{ fontSize: '0.875rem', fontWeight: 700, cursor: 'pointer' }}>Activate Public Interface</label>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '0.5rem' }}>
+            <input type="checkbox" name="isActive" checked={form.isActive} onChange={handleChange} id="isActive" style={{ width: '20px', height: '20px', cursor: 'pointer', accentColor: 'var(--accent)' }} />
+            <label htmlFor="isActive" style={{ fontSize: '0.9375rem', fontWeight: 800, cursor: 'pointer', color: 'var(--text-main)' }}>Activate Platform Interface</label>
           </div>
           
-          <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-            <button className="btn btn-primary" type="submit" disabled={loading} style={{ padding: '0.75rem 2.5rem' }}>
-              {loading ? 'Processing...' : editId ? 'Synchronize' : 'Provision'}
+          <div style={{ display: 'flex', gap: '1.25rem', marginTop: '1.5rem', borderTop: '1px solid var(--bg-soft)', paddingTop: '2.5rem' }}>
+            <button className="btn btn-primary" type="submit" disabled={loading} style={{ padding: '1rem 3rem', fontSize: '0.875rem', fontWeight: 800, letterSpacing: '0.05em' }}>
+              {loading ? 'ARCHITECTING...' : editId ? 'SYNCHRONIZE' : 'PROVISION INSTANCE'}
             </button>
             {editId && (
               <button 
                 className="btn" 
                 type="button" 
                 onClick={() => { setEditId(null); setForm(empty); }}
-                style={{ background: 'none', border: '1px solid var(--border)', padding: '0.75rem 2rem' }}
+                style={{ background: 'white', border: '1px solid var(--border)', padding: '1rem 2.5rem', fontSize: '0.875rem', fontWeight: 800, letterSpacing: '0.05em' }}
               >
-                Abort
+                ABORT
               </button>
             )}
           </div>
         </form>
       </div>
 
-      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+      <header style={{ marginBottom: '2rem' }}>
+          <h3 style={{ fontSize: '1.125rem', fontWeight: 800, letterSpacing: '-0.02em' }}>Managed Pipelines</h3>
+      </header>
+
+      <div className="card" style={{ padding: 0, overflow: 'hidden', boxShadow: '0 10px 30px -10px rgba(0,0,0,0.05)' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr style={{ background: 'var(--bg-soft)', borderBottom: '1px solid var(--border)' }}>
-              <th style={{ padding: '1rem 1.5rem', textAlign: 'left', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Instance Identity</th>
-              <th style={{ padding: '1rem 1.5rem', textAlign: 'left', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Chronology</th>
-              <th style={{ padding: '1rem 1.5rem', textAlign: 'left', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Status</th>
-              <th style={{ padding: '1rem 1.5rem', textAlign: 'right', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Operations</th>
+              <th style={{ padding: '1.25rem 2rem', textAlign: 'left', fontSize: '0.625rem', fontWeight: 900, textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '0.05em' }}>Instance Identity</th>
+              <th style={{ padding: '1.25rem 2rem', textAlign: 'left', fontSize: '0.625rem', fontWeight: 900, textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '0.05em' }}>Chronology</th>
+              <th style={{ padding: '1.25rem 2rem', textAlign: 'left', fontSize: '0.625rem', fontWeight: 900, textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '0.05em' }}>Status</th>
+              <th style={{ padding: '1.25rem 2rem', textAlign: 'right', fontSize: '0.625rem', fontWeight: 900, textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '0.05em' }}>Operations</th>
             </tr>
           </thead>
           <tbody>
-            {hackathons.map(h => (
-              <tr key={h.id} style={{ borderBottom: '1px solid var(--border)' }}>
-                <td style={{ padding: '1.25rem 1.5rem' }}>
-                  <p style={{ fontWeight: 800, fontSize: '1rem', marginBottom: '0.25rem' }}>{h.name}</p>
-                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '300px' }}>{h.description}</p>
+            {hackathons.length === 0 ? (
+                <tr>
+                    <td colSpan="4" style={{ padding: '4rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.875rem', fontWeight: 500 }}>No competition instances synchronized.</td>
+                </tr>
+            ) : hackathons.map(h => (
+              <tr key={h.id} style={{ borderBottom: '1px solid var(--border)', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-soft)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                <td style={{ padding: '1.5rem 2rem' }}>
+                  <p style={{ fontWeight: 800, fontSize: '1rem', marginBottom: '0.375rem', color: 'var(--text-main)' }}>{h.name}</p>
+                  <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '340px' }}>{h.description}</p>
                 </td>
-                <td style={{ padding: '1.25rem 1.5rem' }}>
-                  <p style={{ fontSize: '0.75rem', fontWeight: 700 }}>{h.startDate} &mdash; {h.endDate}</p>
+                <td style={{ padding: '1.5rem 2rem' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                    <p style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-main)' }}>{h.startDate} &mdash;</p>
+                    <p style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--accent)' }}>{h.endDate}</p>
+                  </div>
                 </td>
-                <td style={{ padding: '1.25rem 1.5rem' }}>
-                  <span className={`badge ${h.isActive ? 'badge-success' : ''}`} style={{ fontSize: '0.625rem' }}>
+                <td style={{ padding: '1.5rem 2rem' }}>
+                  <span className={`badge ${h.isActive ? 'badge-success' : ''}`} style={{ fontSize: '0.6875rem', padding: '0.4rem 0.75rem' }}>
                     {h.isActive ? 'ACTIVE' : 'DORMANT'}
                   </span>
                 </td>
-                <td style={{ padding: '1.25rem 1.5rem', textAlign: 'right' }}>
-                  <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
-                    <button onClick={() => handleEdit(h)} style={{ background: 'none', border: 'none', color: 'var(--accent)', fontSize: '0.625rem', fontWeight: 700, cursor: 'pointer', textTransform: 'uppercase' }}>Modify</button>
-                    <button onClick={() => handleDelete(h.id)} style={{ background: 'none', border: 'none', color: '#ef4444', fontSize: '0.625rem', fontWeight: 700, cursor: 'pointer', textTransform: 'uppercase' }}>Terminate</button>
+                <td style={{ padding: '1.5rem 2rem', textAlign: 'right' }}>
+                  <div style={{ display: 'flex', gap: '1.25rem', justifyContent: 'flex-end' }}>
+                    <button onClick={() => handleEdit(h)} style={{ background: 'none', border: 'none', color: 'var(--accent)', fontSize: '0.6875rem', fontWeight: 800, cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Modify</button>
+                    <button onClick={() => handleDelete(h.id)} style={{ background: 'none', border: 'none', color: 'var(--error)', fontSize: '0.6875rem', fontWeight: 800, cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Terminate</button>
                   </div>
                 </td>
               </tr>

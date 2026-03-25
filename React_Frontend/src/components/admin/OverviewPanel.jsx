@@ -11,8 +11,10 @@ const styles = {
 
 export default function OverviewPanel() {
   const [stats, setStats] = useState({ hackathons: 0, judges: 0, teams: 0, pendingTeams: 0 });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    setLoading(true);
     Promise.all([
       axiosInstance.get('/api/admin/hackathons'),
       axiosInstance.get('/api/admin/judges'),
@@ -25,7 +27,11 @@ export default function OverviewPanel() {
         teams: teams.length,
         pendingTeams: teams.filter(tm => tm.acceptanceStatus === 'PENDING').length,
       });
-    }).catch(() => {});
+    }).catch(err => {
+      console.error("Failed to fetch overview stats:", err);
+    }).finally(() => {
+      setLoading(false);
+    });
   }, []);
 
   const items = [
@@ -39,12 +45,16 @@ export default function OverviewPanel() {
     <div>
       <div style={styles.title}>Overview</div>
       <div style={styles.grid}>
-        {items.map(item => (
-          <div key={item.label} style={styles.card}>
-            <div style={styles.value}>{item.value}</div>
-            <div style={styles.label}>{item.label}</div>
-          </div>
-        ))}
+        {loading ? (
+          <div style={{ colSpan: 'all', textAlign: 'center', padding: 40, color: '#666' }}>Loading metrics...</div>
+        ) : (
+          items.map(item => (
+            <div key={item.label} style={styles.card}>
+              <div style={styles.value}>{item.value}</div>
+              <div style={styles.label}>{item.label}</div>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );

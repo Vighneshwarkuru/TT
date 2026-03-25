@@ -20,13 +20,18 @@ export default function AuditViewerPanel() {
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [filters, setFilters] = useState({ userId: '', action: '', dateFrom: '', dateTo: '' });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const load = (p = 0) => {
+    setLoading(true);
+    setError(null);
     const params = { page: p, size: 20 };
     if (filters.userId) params.userId = filters.userId;
     if (filters.action) params.action = filters.action;
     if (filters.dateFrom) params.dateFrom = filters.dateFrom;
     if (filters.dateTo) params.dateTo = filters.dateTo;
+    
     axiosInstance.get('/api/admin/audit-logs', { params })
       .then(r => {
         const data = r.data;
@@ -37,7 +42,12 @@ export default function AuditViewerPanel() {
           setLogs(Array.isArray(data) ? data : []);
         }
       })
-      .catch(() => setLogs([]));
+      .catch(err => {
+        console.error("Failed to load audit logs:", err);
+        setError("Failed to load audit logs. Please try again.");
+        setLogs([]);
+      })
+      .finally(() => setLoading(false));
   };
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -81,17 +91,25 @@ export default function AuditViewerPanel() {
           </tr>
         </thead>
         <tbody>
-          {logs.map(log => (
-            <tr key={log.id}>
-              <td style={s.td}>{log.id}</td>
-              <td style={s.td}>{log.userId}</td>
-              <td style={s.td}>{log.action}</td>
-              <td style={s.td}>{log.entityType}</td>
-              <td style={s.td}>{log.entityId}</td>
-              <td style={s.td}>{log.ipAddress}</td>
-              <td style={s.td}>{log.createdAt ? new Date(log.createdAt).toLocaleString() : '—'}</td>
-            </tr>
-          ))}
+          {loading ? (
+            <tr><td colSpan="7" style={{ ...s.td, textAlign: 'center', padding: 30 }}>Loading logs...</td></tr>
+          ) : error ? (
+            <tr><td colSpan="7" style={{ ...s.td, textAlign: 'center', padding: 30, color: '#d32f2f' }}>{error}</td></tr>
+          ) : logs.length === 0 ? (
+            <tr><td colSpan="7" style={{ ...s.td, textAlign: 'center', padding: 30 }}>No audit logs found.</td></tr>
+          ) : (
+            logs.map(log => (
+              <tr key={log.id}>
+                <td style={s.td}>{log.id}</td>
+                <td style={s.td}>{log.userId}</td>
+                <td style={s.td}>{log.action}</td>
+                <td style={s.td}>{log.entityType}</td>
+                <td style={s.td}>{log.entityId}</td>
+                <td style={s.td}>{log.ipAddress}</td>
+                <td style={s.td}>{log.createdAt ? new Date(log.createdAt).toLocaleString() : '—'}</td>
+              </tr>
+            ))
+          )}
         </tbody>
       </table>
 

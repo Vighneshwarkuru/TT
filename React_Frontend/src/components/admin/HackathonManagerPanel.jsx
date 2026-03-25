@@ -13,35 +13,18 @@ const empty = {
   extraQuestion3Label: ''
 };
 
-const s = {
-  // ... existing styles ... (I'll reuse the style object from the file)
-  title: { fontSize: 22, fontWeight: 600, marginBottom: 16 },
-  form: { background: '#fff', border: '1px solid #e0e0e0', borderRadius: 8, padding: 20, marginBottom: 24 },
-  formTitle: { fontSize: 16, fontWeight: 600, marginBottom: 14 },
-  field: { marginBottom: 12 },
-  label: { display: 'block', fontSize: 13, fontWeight: 600, color: '#444', marginBottom: 3 },
-  input: { width: '100%', padding: '8px 10px', border: '1px solid #ccc', borderRadius: 5, fontSize: 14, boxSizing: 'border-box' },
-  textarea: { width: '100%', padding: '8px 10px', border: '1px solid #ccc', borderRadius: 5, fontSize: 14, boxSizing: 'border-box', minHeight: 70 },
-  row: { display: 'flex', gap: 12 },
-  btn: { padding: '8px 18px', borderRadius: 5, border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 600 },
-  btnPrimary: { background: '#1976d2', color: '#fff' },
-  btnDanger: { background: '#d32f2f', color: '#fff' },
-  btnSecondary: { background: '#e0e0e0', color: '#333' },
-  table: { width: '100%', borderCollapse: 'collapse', background: '#fff', borderRadius: 8, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' },
-  th: { background: '#f5f5f5', padding: '10px 12px', textAlign: 'left', fontSize: 13, fontWeight: 600, borderBottom: '1px solid #e0e0e0' },
-  td: { padding: '10px 12px', fontSize: 13, borderBottom: '1px solid #f0f0f0' },
-  error: { color: '#d32f2f', fontSize: 13, marginBottom: 10 },
-  checkRow: { display: 'flex', alignItems: 'center', gap: 8 },
-  labelSection: { marginTop: 16, paddingTop: 16, borderTop: '1px solid #eee' }
-};
-
 export default function HackathonManagerPanel() {
   const [hackathons, setHackathons] = useState([]);
   const [form, setForm] = useState(empty);
   const [editId, setEditId] = useState(null);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const load = () => axiosInstance.get('/api/admin/hackathons').then(r => setHackathons(r.data)).catch(() => {});
+  const load = () => {
+    axiosInstance.get('/api/admin/hackathons')
+      .then(r => setHackathons(r.data))
+      .catch(() => setError('Failed to synchronize competition data.'));
+  };
 
   useEffect(() => { load(); }, []);
 
@@ -53,6 +36,7 @@ export default function HackathonManagerPanel() {
   const handleSubmit = async e => {
     e.preventDefault();
     setError('');
+    setLoading(true);
     try {
       if (editId) {
         await axiosInstance.put(`/api/admin/hackathons/${editId}`, form);
@@ -63,7 +47,9 @@ export default function HackathonManagerPanel() {
       setEditId(null);
       load();
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to save hackathon.');
+      setError(err.response?.data?.message || 'Failed to save competition parameters.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -80,104 +66,134 @@ export default function HackathonManagerPanel() {
       extraQuestion2Label: h.extraQuestion2Label || '',
       extraQuestion3Label: h.extraQuestion3Label || ''
     });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleDelete = async id => {
-    if (!window.confirm('Delete this hackathon?')) return;
+    if (!window.confirm('Are you sure you want to terminate this competition instance?')) return;
     try {
       await axiosInstance.delete(`/api/admin/hackathons/${id}`);
       load();
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to delete.');
+      setError(err.response?.data?.message || 'Failed to delete hackathon.');
     }
   };
 
   return (
-    <div>
-      <div style={s.title}>Hackathon Manager</div>
-      <div style={s.form}>
-        <div style={s.formTitle}>{editId ? 'Edit Hackathon' : 'Create Hackathon'}</div>
-        {error && <div style={s.error}>{error}</div>}
-        <form onSubmit={handleSubmit}>
-          <div style={s.field}>
-            <label style={s.label}>Name</label>
-            <input style={s.input} name="name" value={form.name} onChange={handleChange} required />
-          </div>
-          <div style={s.field}>
-            <label style={s.label}>Description</label>
-            <textarea style={s.textarea} name="description" value={form.description} onChange={handleChange} />
-          </div>
-          <div style={s.row}>
-            <div style={{ ...s.field, flex: 1 }}>
-              <label style={s.label}>Start Date</label>
-              <input style={s.input} type="date" name="startDate" value={form.startDate} onChange={handleChange} required />
+    <div style={{ animation: 'fadeIn 0.3s ease-out' }}>
+      <header style={{ marginBottom: '2.5rem' }}>
+        <h2 style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '0.5rem' }}>Competition Architect</h2>
+        <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Define and configure the parameters for judicial evaluation cycles.</p>
+      </header>
+
+      <div className="card" style={{ padding: '2rem', marginBottom: '3rem' }}>
+        <h3 style={{ fontSize: '1.125rem', fontWeight: 700, marginBottom: '2rem' }}>{editId ? 'Modify Instance' : 'Provision New Hackathon'}</h3>
+        {error && (
+            <div style={{ padding: '1rem', background: 'rgba(239, 68, 68, 0.1)', color: 'var(--error)', borderRadius: '8px', fontSize: '0.875rem', fontWeight: 600, marginBottom: '2rem' }}>
+              {error}
             </div>
-            <div style={{ ...s.field, flex: 1 }}>
-              <label style={s.label}>End Date</label>
-              <input style={s.input} type="date" name="endDate" value={form.endDate} onChange={handleChange} required />
+        )}
+        <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '1.5rem' }}>
+          <div>
+            <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Competition Name</label>
+            <input className="input" name="name" value={form.name} onChange={handleChange} required placeholder="Global Innovation Summit 2026" />
+          </div>
+          <div>
+            <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Executive Summary</label>
+            <textarea className="input" name="description" value={form.description} onChange={handleChange} style={{ minHeight: '100px' }} placeholder="Provide a high-level overview of the competition objectives..." />
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem' }}>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Ignition Date</label>
+              <input className="input" type="date" name="startDate" value={form.startDate} onChange={handleChange} required />
             </div>
-            <div style={{ ...s.field, flex: 1 }}>
-              <label style={s.label}>Registration Deadline</label>
-              <input style={s.input} type="date" name="registrationDeadline" value={form.registrationDeadline} onChange={handleChange} />
+            <div>
+              <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Completion Date</label>
+              <input className="input" type="date" name="endDate" value={form.endDate} onChange={handleChange} required />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Registry Deadline</label>
+              <input className="input" type="date" name="registrationDeadline" value={form.registrationDeadline} onChange={handleChange} />
             </div>
           </div>
 
-          <div style={s.labelSection}>
-            <div style={{...s.formTitle, fontSize: 14}}>Custom Question Labels (Optional)</div>
-            <div style={s.row}>
-                <div style={{ ...s.field, flex: 1 }}>
-                    <label style={s.label}>Question 1</label>
-                    <input style={s.input} name="extraQuestion1Label" value={form.extraQuestion1Label} onChange={handleChange} placeholder="e.g. Domain of Interest" />
+          <div style={{ padding: '2rem', background: 'var(--bg-soft)', borderRadius: '12px' }}>
+            <h4 style={{ fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--accent)', marginBottom: '1.5rem' }}>Governance Customization</h4>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem' }}>
+                <div>
+                    <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Telemetry Field #1</label>
+                    <input className="input" name="extraQuestion1Label" value={form.extraQuestion1Label} onChange={handleChange} placeholder="e.g. Primary Domain" style={{ background: 'white' }} />
                 </div>
-                <div style={{ ...s.field, flex: 1 }}>
-                    <label style={s.label}>Question 2</label>
-                    <input style={s.input} name="extraQuestion2Label" value={form.extraQuestion2Label} onChange={handleChange} placeholder="e.g. Tech Stack" />
+                <div>
+                    <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Telemetry Field #2</label>
+                    <input className="input" name="extraQuestion2Label" value={form.extraQuestion2Label} onChange={handleChange} placeholder="e.g. Technology Stack" style={{ background: 'white' }} />
                 </div>
-                <div style={{ ...s.field, flex: 1 }}>
-                    <label style={s.label}>Question 3</label>
-                    <input style={s.input} name="extraQuestion3Label" value={form.extraQuestion3Label} onChange={handleChange} placeholder="e.g. Link to Resume" />
+                <div>
+                    <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Telemetry Field #3</label>
+                    <input className="input" name="extraQuestion3Label" value={form.extraQuestion3Label} onChange={handleChange} placeholder="e.g. Portfolio Link" style={{ background: 'white' }} />
                 </div>
             </div>
           </div>
 
-          <div style={{ ...s.field, ...s.checkRow }}>
-            <input type="checkbox" name="isActive" checked={form.isActive} onChange={handleChange} id="isActive" />
-            <label htmlFor="isActive" style={{ fontSize: 13, fontWeight: 600 }}>Active</label>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <input type="checkbox" name="isActive" checked={form.isActive} onChange={handleChange} id="isActive" style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: 'var(--accent)' }} />
+            <label htmlFor="isActive" style={{ fontSize: '0.875rem', fontWeight: 700, cursor: 'pointer' }}>Activate Public Interface</label>
           </div>
-          <div style={s.row}>
-            <button style={{ ...s.btn, ...s.btnPrimary }} type="submit">{editId ? 'Update' : 'Create'}</button>
-            {editId && <button style={{ ...s.btn, ...s.btnSecondary }} type="button" onClick={() => { setEditId(null); setForm(empty); }}>Cancel</button>}
+          
+          <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+            <button className="btn btn-primary" type="submit" disabled={loading} style={{ padding: '0.75rem 2.5rem' }}>
+              {loading ? 'Processing...' : editId ? 'Synchronize' : 'Provision'}
+            </button>
+            {editId && (
+              <button 
+                className="btn" 
+                type="button" 
+                onClick={() => { setEditId(null); setForm(empty); }}
+                style={{ background: 'none', border: '1px solid var(--border)', padding: '0.75rem 2rem' }}
+              >
+                Abort
+              </button>
+            )}
           </div>
         </form>
       </div>
 
-      <table style={s.table}>
-        <thead>
-          <tr>
-            <th style={s.th}>Name</th>
-            <th style={s.th}>Start</th>
-            <th style={s.th}>End</th>
-            <th style={s.th}>Active</th>
-            <th style={s.th}>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {hackathons.map(h => (
-            <tr key={h.id}>
-              <td style={s.td}>{h.name}</td>
-              <td style={s.td}>{h.startDate}</td>
-              <td style={s.td}>{h.endDate}</td>
-              <td style={s.td}>{h.isActive ? 'Yes' : 'No'}</td>
-              <td style={s.td}>
-                <div style={s.row}>
-                  <button style={{ ...s.btn, ...s.btnSecondary }} onClick={() => handleEdit(h)}>Edit</button>
-                  <button style={{ ...s.btn, ...s.btnDanger }} onClick={() => handleDelete(h.id)}>Delete</button>
-                </div>
-              </td>
+      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ background: 'var(--bg-soft)', borderBottom: '1px solid var(--border)' }}>
+              <th style={{ padding: '1rem 1.5rem', textAlign: 'left', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Instance Identity</th>
+              <th style={{ padding: '1rem 1.5rem', textAlign: 'left', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Chronology</th>
+              <th style={{ padding: '1rem 1.5rem', textAlign: 'left', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Status</th>
+              <th style={{ padding: '1rem 1.5rem', textAlign: 'right', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Operations</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {hackathons.map(h => (
+              <tr key={h.id} style={{ borderBottom: '1px solid var(--border)' }}>
+                <td style={{ padding: '1.25rem 1.5rem' }}>
+                  <p style={{ fontWeight: 800, fontSize: '1rem', marginBottom: '0.25rem' }}>{h.name}</p>
+                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '300px' }}>{h.description}</p>
+                </td>
+                <td style={{ padding: '1.25rem 1.5rem' }}>
+                  <p style={{ fontSize: '0.75rem', fontWeight: 700 }}>{h.startDate} &mdash; {h.endDate}</p>
+                </td>
+                <td style={{ padding: '1.25rem 1.5rem' }}>
+                  <span className={`badge ${h.isActive ? 'badge-success' : ''}`} style={{ fontSize: '0.625rem' }}>
+                    {h.isActive ? 'ACTIVE' : 'DORMANT'}
+                  </span>
+                </td>
+                <td style={{ padding: '1.25rem 1.5rem', textAlign: 'right' }}>
+                  <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
+                    <button onClick={() => handleEdit(h)} style={{ background: 'none', border: 'none', color: 'var(--accent)', fontSize: '0.625rem', fontWeight: 700, cursor: 'pointer', textTransform: 'uppercase' }}>Modify</button>
+                    <button onClick={() => handleDelete(h.id)} style={{ background: 'none', border: 'none', color: '#ef4444', fontSize: '0.625rem', fontWeight: 700, cursor: 'pointer', textTransform: 'uppercase' }}>Terminate</button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

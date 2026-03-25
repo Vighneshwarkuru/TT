@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import axiosInstance from '../api/axiosInstance';
+import Layout from '../components/Layout';
 
 export default function HackathonPage() {
     const { id } = useParams();
@@ -148,107 +149,132 @@ export default function HackathonPage() {
     };
 
     if (loading) return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-900 text-white">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+        <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-soft)' }}>
+            <div style={{ padding: '2rem', textAlign: 'center' }}>
+                <p style={{ color: 'var(--text-muted)' }}>Synching Workspace...</p>
+            </div>
         </div>
     );
 
     if (error || !hackathon) return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-900 text-white">
-            <div className="text-center p-8 bg-slate-800 rounded-2xl shadow-2xl border border-slate-700">
-                <h1 className="text-2xl font-bold text-red-400 mb-4">Error</h1>
-                <p className="text-slate-300 mb-6">{error || "Hackathon not found."}</p>
-                <button onClick={() => navigate(-1)} className="px-6 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-lg transition">Go Back</button>
+        <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-soft)' }}>
+            <div className="card" style={{ maxWidth: '400px', textAlign: 'center' }}>
+                <h1 style={{ color: 'var(--error)', marginBottom: '1rem' }}>Access Error</h1>
+                <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem' }}>{error || "Hackathon not found."}</p>
+                <button onClick={() => navigate(-1)} className="btn btn-primary" style={{ width: '100%' }}>Return to Dashboard</button>
             </div>
         </div>
     );
 
     return (
-        <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-indigo-500/30">
-            {/* Hero Section */}
-            <div className="relative overflow-hidden bg-slate-900 pb-20 pt-16 shadow-2xl">
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[400px] bg-indigo-600/20 blur-[120px] rounded-full"></div>
-                
-                <div className="max-w-7xl mx-auto px-6 relative z-10">
-                    <button 
-                        onClick={() => navigate(-1)}
-                        className="mb-8 flex items-center text-slate-400 hover:text-white transition group"
-                    >
-                        <span className="mr-2 group-hover:-translate-x-1 transition-transform">←</span> Back to Dashboard
-                    </button>
-                    
-                    <div className="grid md:grid-cols-2 gap-12 items-center">
-                        <div>
-                            <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">
+        <Layout>
+            <div className="container" style={{ paddingBottom: '4rem' }}>
+                <button 
+                    onClick={() => navigate(-1)}
+                    style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', marginBottom: '1.5rem', fontWeight: 600, fontSize: '0.875rem' }}
+                >
+                    &larr; Back to Dashboard
+                </button>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 380px', gap: '3rem', alignItems: 'start' }}>
+                    <div className="main-content">
+                        <header style={{ marginBottom: '3rem' }}>
+                            <h1 style={{ fontSize: '3rem', fontWeight: 800, letterSpacing: '-0.025em', marginBottom: '1rem' }}>
                                 {hackathon.name}
                             </h1>
-                            <p className="text-xl text-slate-400 leading-relaxed mb-8 max-w-xl">
+                            <p style={{ fontSize: '1.125rem', color: 'var(--text-muted)', lineHeight: 1.6, maxWidth: '800px' }}>
                                 {hackathon.description}
                             </p>
-                            <div className="flex flex-wrap gap-4 text-sm font-medium">
-                                <div className="px-4 py-2 bg-slate-800/50 rounded-full border border-slate-700 backdrop-blur-md">
+                            <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>
+                                <span className="badge" style={{ padding: '0.5rem 1rem' }}>
                                     📅 Deadline: {hackathon.registrationDeadline}
-                                </div>
-                                <div className="px-4 py-2 bg-slate-800/50 rounded-full border border-slate-700 backdrop-blur-md">
+                                </span>
+                                <span className="badge" style={{ padding: '0.5rem 1rem' }}>
                                     🏁 Starts: {hackathon.startDate}
-                                </div>
+                                </span>
                             </div>
-                        </div>
+                        </header>
 
+                        <section style={{ marginBottom: '4rem' }}>
+                            <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '1.5rem', display: 'flex', alignItems: 'center' }}>
+                                <span style={{ width: '4px', height: '24px', background: 'var(--accent)', borderRadius: '2px', marginRight: '1rem' }}></span>
+                                Rules & Requirements
+                            </h2>
+                            <div className="card" style={{ padding: '2rem', background: 'var(--bg-soft)' }}>
+                                <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'grid', gap: '1rem' }}>
+                                    <li style={{ display: 'flex', alignItems: 'center', color: 'var(--text-muted)' }}>
+                                        <span style={{ color: 'var(--accent)', marginRight: '0.75rem', fontWeight: 900 }}>&check;</span>
+                                        Max 4 members per team.
+                                    </li>
+                                    <li style={{ display: 'flex', alignItems: 'center', color: 'var(--text-muted)' }}>
+                                        <span style={{ color: 'var(--accent)', marginRight: '0.75rem', fontWeight: 900 }}>&check;</span>
+                                        Projects must be built during the event timeframe.
+                                    </li>
+                                    <li style={{ display: 'flex', alignItems: 'center', color: 'var(--text-muted)' }}>
+                                        <span style={{ color: 'var(--accent)', marginRight: '0.75rem', fontWeight: 900 }}>&check;</span>
+                                        Open-source projects only.
+                                    </li>
+                                </ul>
+                            </div>
+                        </section>
+                    </div>
+
+                    <aside className="sidebar">
                         {user?.role === 'PARTICIPANT' && !myTeam && (
-                            <div className="bg-slate-800/40 backdrop-blur-xl p-8 rounded-3xl border border-white/10 shadow-2xl animate-in fade-in slide-in-from-right-10 duration-700">
-                                <h2 className="text-2xl font-bold mb-6">Register Your Team</h2>
-                                <form onSubmit={handleRegister} className="space-y-4">
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-semibold text-slate-400">Team Name</label>
+                            <div className="card" style={{ padding: '2rem' }}>
+                                <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '1.5rem' }}>Team Registration</h2>
+                                <form onSubmit={handleRegister} style={{ display: 'grid', gap: '1.25rem' }}>
+                                    <div>
+                                        <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Team Name</label>
                                         <input 
                                             required
                                             value={formData.teamName}
                                             onChange={e => setFormData({...formData, teamName: e.target.value})}
-                                            className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+                                            className="input"
                                             placeholder="The Matrix"
                                         />
                                     </div>
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-semibold text-slate-400">Project Title</label>
+                                    <div>
+                                        <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Project Title</label>
                                         <input 
                                             required
                                             value={formData.projectTitle}
                                             onChange={e => setFormData({...formData, projectTitle: e.target.value})}
-                                            className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+                                            className="input"
                                             placeholder="Deep Learning for AI"
                                         />
                                     </div>
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-semibold text-slate-400">Abstract / Description</label>
+                                    <div>
+                                        <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Abstract / Description</label>
                                         <textarea 
                                             required
                                             value={formData.abstractContent}
                                             onChange={e => setFormData({...formData, abstractContent: e.target.value})}
-                                            className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition min-h-[100px]"
+                                            className="input"
+                                            style={{ minHeight: '100px' }}
                                             placeholder="Explain your project goals and tech stack..."
                                         />
                                     </div>
 
                                     {hackathon.extraQuestion1Label && (
-                                        <div className="space-y-2">
-                                            <label className="text-sm font-semibold text-slate-400">{hackathon.extraQuestion1Label}</label>
+                                        <div>
+                                            <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>{hackathon.extraQuestion1Label}</label>
                                             <input 
                                                 required
                                                 value={formData.extraQuestion1}
                                                 onChange={e => setFormData({...formData, extraQuestion1: e.target.value})}
-                                                className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+                                                className="input"
                                             />
                                         </div>
                                     )}
                                     {hackathon.extraQuestion2Label && (
-                                        <div className="space-y-2">
-                                            <label className="text-sm font-semibold text-slate-400">{hackathon.extraQuestion2Label}</label>
+                                        <div>
+                                            <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>{hackathon.extraQuestion2Label}</label>
                                             <input 
                                                 required
                                                 value={formData.extraQuestion2}
                                                 onChange={e => setFormData({...formData, extraQuestion2: e.target.value})}
-                                                className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+                                                className="input"
                                             />
                                         </div>
                                     )}
@@ -256,38 +282,40 @@ export default function HackathonPage() {
                                     <button 
                                         type="submit"
                                         disabled={submitting}
-                                        className="w-full bg-indigo-600 hover:bg-indigo-500 py-4 rounded-xl font-bold shadow-lg shadow-indigo-600/20 active:scale-[0.98] transition disabled:opacity-50"
+                                        className="btn btn-primary"
+                                        style={{ marginTop: '1rem', width: '100%' }}
                                     >
-                                        {submitting ? 'Registering...' : 'Complete Registration'}
+                                        {submitting ? 'Processing...' : 'Complete Registration'}
                                     </button>
                                 </form>
                             </div>
                         )}
 
                         {user?.role === 'PARTICIPANT' && myTeam && (
-                            <div className="bg-indigo-600/10 border border-indigo-500/30 p-8 rounded-3xl shadow-xl animate-in zoom-in duration-500">
-                                <div className="flex items-center space-x-4 mb-6">
-                                    <div className="p-3 bg-indigo-500 rounded-2xl shadow-lg">🚀</div>
-                                    <h2 className="text-2xl font-bold">You're Registered!</h2>
+                            <div className="card" style={{ padding: '2rem', background: 'var(--bg-soft)', border: '1px solid var(--accent)' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+                                    <div style={{ background: 'var(--accent)', color: 'white', padding: '0.5rem', borderRadius: '8px' }}>🚀</div>
+                                    <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>Team Registered</h2>
                                 </div>
-                                <div className="space-y-4">
+                                <div style={{ display: 'grid', gap: '1.25rem' }}>
                                     <div>
-                                        <p className="text-sm font-semibold text-indigo-300 mb-1 uppercase tracking-wider">Team Name</p>
-                                        <p className="text-xl font-bold">{myTeam.teamName}</p>
+                                        <p style={{ fontSize: '0.625rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Team Name</p>
+                                        <p style={{ fontWeight: 800, fontSize: '1.125rem' }}>{myTeam.teamName}</p>
                                     </div>
                                     <div>
-                                        <p className="text-sm font-semibold text-indigo-300 mb-1 uppercase tracking-wider">Status</p>
-                                        <span className={`px-4 py-1 rounded-full text-xs font-bold ${
-                                            myTeam.status === 'ACCEPTED' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' :
-                                            myTeam.status === 'REJECTED' ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' :
-                                            'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                                        <p style={{ fontSize: '0.625rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Status</p>
+                                        <span className={`badge ${
+                                            myTeam.status === 'ACCEPTED' ? 'badge-success' :
+                                            myTeam.status === 'REJECTED' ? '' : // Use default for rejected for now
+                                            ''
                                         }`}>
                                             {myTeam.status}
                                         </span>
                                     </div>
                                     <button 
                                         onClick={() => navigate('/participant')}
-                                        className="w-full mt-6 bg-white/10 hover:bg-white/20 py-3 rounded-xl font-semibold transition"
+                                        className="btn"
+                                        style={{ width: '100%', background: 'white', border: '1px solid var(--border)' }}
                                     >
                                         Manage Team Profile
                                     </button>
@@ -296,53 +324,51 @@ export default function HackathonPage() {
                         )}
 
                         {user?.role === 'ADMIN' && (
-                             <div className="bg-slate-800/40 backdrop-blur-xl p-8 rounded-3xl border border-white/10 shadow-2xl">
-                                <h2 className="text-2xl font-bold mb-6 flex justify-between items-center">
-                                    Governance Center
+                             <div className="card" style={{ padding: '1.5rem' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                                    <h2 style={{ fontSize: '1.125rem', fontWeight: 700 }}>Governance</h2>
                                     <button 
                                         onClick={() => setShowJudgeManager(!showJudgeManager)}
-                                        className="text-sm px-4 py-1 bg-white/5 hover:bg-white/10 rounded-full border border-white/10 transition"
+                                        style={{ background: 'var(--bg-soft)', border: '1px solid var(--border)', padding: '0.25rem 0.75rem', borderRadius: '4px', fontSize: '0.625rem', fontWeight: 700, cursor: 'pointer' }}
                                     >
-                                        {showJudgeManager ? 'Hide Management' : 'Manage Judges'}
+                                        {showJudgeManager ? 'Panels' : 'Judges'}
                                     </button>
-                                </h2>
+                                </div>
                                 
                                 {showJudgeManager ? (
-                                    <div className="space-y-8 animate-in fade-in slide-in-from-top-4 duration-300">
-                                        <div>
-                                            <h3 className="text-[10px] font-black p-2 bg-indigo-500/10 text-indigo-400 rounded-lg inline-block uppercase tracking-widest mb-4">Assigned Judges</h3>
-                                            <div className="space-y-2">
+                                    <div style={{ animation: 'fadeIn 0.3s ease-out' }}>
+                                        <div style={{ marginBottom: '1.5rem' }}>
+                                            <p style={{ fontSize: '0.625rem', fontWeight: 800, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.75rem' }}>Assigned Judges</p>
+                                            <div style={{ display: 'grid', gap: '0.5rem' }}>
                                                 {assignedJudges.map(j => (
-                                                    <div key={j.id} className="flex justify-between items-center p-4 bg-slate-900/50 rounded-2xl border border-white/5 group">
-                                                        <div>
-                                                            <p className="font-bold">{j.firstName} {j.lastName}</p>
-                                                            <p className="text-xs text-slate-500">{j.email}</p>
+                                                    <div key={j.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem', background: 'var(--bg-soft)', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                                                        <div style={{ overflow: 'hidden' }}>
+                                                            <p style={{ fontSize: '0.8125rem', fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{j.firstName} {j.lastName}</p>
                                                         </div>
                                                         <button 
                                                             onClick={() => removeJudge(j.id)}
-                                                            className="text-xs font-bold text-rose-500 hover:bg-rose-500/10 px-3 py-1 rounded-lg transition"
+                                                            style={{ border: 'none', background: 'none', color: '#ef4444', fontSize: '0.625rem', fontWeight: 700, cursor: 'pointer', marginLeft: '0.5rem' }}
                                                         >
                                                             Remove
                                                         </button>
                                                     </div>
                                                 ))}
-                                                {assignedJudges.length === 0 && <p className="text-slate-600 text-sm italic">No judges assigned yet.</p>}
+                                                {assignedJudges.length === 0 && <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>No judges assigned.</p>}
                                             </div>
                                         </div>
                                         <div>
-                                            <h3 className="text-[10px] font-black p-2 bg-slate-500/10 text-slate-400 rounded-lg inline-block uppercase tracking-widest mb-4">Available Judges</h3>
-                                            <div className="grid grid-cols-1 gap-2 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                                            <p style={{ fontSize: '0.625rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.75rem' }}>Available</p>
+                                            <div style={{ display: 'grid', gap: '0.5rem', maxHeight: '200px', overflowY: 'auto', paddingRight: '4px' }}>
                                                 {allJudges.filter(j => !assignedJudges.find(aj => aj.id === j.id)).map(j => (
-                                                    <div key={j.id} className="flex justify-between items-center p-4 bg-white/5 rounded-2xl border border-white/5 hover:border-indigo-500/30 transition">
-                                                        <div>
-                                                            <p className="font-bold">{j.firstName} {j.lastName}</p>
-                                                            <p className="text-xs text-slate-500">{j.email}</p>
+                                                    <div key={j.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem', border: '1px solid var(--border)', borderRadius: '8px' }}>
+                                                        <div style={{ overflow: 'hidden' }}>
+                                                            <p style={{ fontSize: '0.8125rem', fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{j.firstName} {j.lastName}</p>
                                                         </div>
                                                         <button 
                                                             onClick={() => assignJudge(j.id)}
-                                                            className="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-500 rounded-xl text-xs font-bold transition shadow-lg shadow-indigo-600/20"
+                                                            style={{ background: 'var(--accent)', color: 'white', border: 'none', padding: '0.25rem 0.5rem', borderRadius: '4px', fontSize: '0.625rem', fontWeight: 700, cursor: 'pointer' }}
                                                         >
-                                                            Assign
+                                                            Add
                                                         </button>
                                                     </div>
                                                 ))}
@@ -350,176 +376,103 @@ export default function HackathonPage() {
                                         </div>
                                     </div>
                                 ) : (
-                                    <div className="space-y-6">
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <button 
-                                                onClick={() => { setActiveManagementTab('TEAMS'); fetchTeams(); }}
-                                                className={`p-4 rounded-2xl border transition flex flex-col items-center justify-center space-y-2 ${activeManagementTab === 'TEAMS' ? 'bg-indigo-600 border-indigo-500' : 'bg-slate-900/50 hover:bg-slate-900 border-slate-700'}`}
-                                            >
-                                                <span className="text-2xl">👥</span>
-                                                <span className="text-sm font-semibold">View Teams</span>
-                                            </button>
-                                            <button 
-                                                onClick={() => { setActiveManagementTab('LEADERBOARD'); fetchLeaderboard(); }}
-                                                className={`p-4 rounded-2xl border transition flex flex-col items-center justify-center space-y-2 ${activeManagementTab === 'LEADERBOARD' ? 'bg-indigo-600 border-indigo-500' : 'bg-slate-900/50 hover:bg-slate-900 border-slate-700'}`}
-                                            >
-                                                <span className="text-2xl">📊</span>
-                                                <span className="text-sm font-semibold">Leaderboard</span>
-                                            </button>
-                                            <button 
-                                                onClick={() => setActiveManagementTab('GENERAL')}
-                                                className={`p-4 rounded-2xl border transition flex flex-col items-center justify-center space-y-2 ${activeManagementTab === 'GENERAL' ? 'bg-indigo-600 border-indigo-500' : 'bg-slate-900/50 hover:bg-slate-900 border-slate-700'}`}
-                                            >
-                                                <span className="text-2xl">⚙️</span>
-                                                <span className="text-sm font-semibold">General</span>
-                                            </button>
-                                            <button 
-                                                onClick={() => setActiveManagementTab('AUDIT')}
-                                                className={`p-4 rounded-2xl border transition flex flex-col items-center justify-center space-y-2 ${activeManagementTab === 'AUDIT' ? 'bg-indigo-600 border-indigo-500' : 'bg-slate-900/50 hover:bg-slate-900 border-slate-700'}`}
-                                            >
-                                                <span className="text-2xl">📜</span>
-                                                <span className="text-sm font-semibold">Audit Logs</span>
-                                            </button>
+                                    <div style={{ display: 'grid', gap: '1rem' }}>
+                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.5rem' }}>
+                                            {['GENERAL', 'TEAMS', 'LEADERBOARD', 'AUDIT'].map(tab => (
+                                                <button 
+                                                    key={tab}
+                                                    onClick={() => {
+                                                        setActiveManagementTab(tab);
+                                                        if (tab === 'TEAMS') fetchTeams();
+                                                        if (tab === 'LEADERBOARD') fetchLeaderboard();
+                                                    }}
+                                                    style={{ 
+                                                        padding: '0.75rem 0.5rem', 
+                                                        borderRadius: '8px', 
+                                                        border: '1px solid var(--border)',
+                                                        fontSize: '0.625rem',
+                                                        fontWeight: 800,
+                                                        cursor: 'pointer',
+                                                        transition: 'all 0.2s',
+                                                        background: activeManagementTab === tab ? 'var(--accent)' : 'var(--bg-soft)',
+                                                        color: activeManagementTab === tab ? 'white' : 'var(--text-muted)',
+                                                        borderColor: activeManagementTab === tab ? 'var(--accent)' : 'var(--border)'
+                                                    }}
+                                                >
+                                                    {tab}
+                                                </button>
+                                            ))}
                                         </div>
 
-                                        {/* Tab Content */}
-                                        <div className="mt-6 border-t border-white/5 pt-6">
+                                        <div style={{ marginTop: '0.5rem', borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
                                             {activeManagementTab === 'TEAMS' && (
-                                                <div className="space-y-4 animate-in fade-in duration-300">
-                                                    <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider">Registered Teams</h3>
-                                                    <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-                                                        {teams.map(t => (
-                                                            <div key={t.id} className="p-4 bg-slate-900/80 rounded-2xl border border-white/5">
-                                                                <div className="flex justify-between items-start mb-2">
-                                                                    <div>
-                                                                        <p className="font-bold text-lg">{t.teamName}</p>
-                                                                        <p className="text-xs text-indigo-400">{t.projectTitle}</p>
-                                                                    </div>
-                                                                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                                                                        t.acceptanceStatus === 'ACCEPTED' ? 'bg-emerald-500/20 text-emerald-400' :
-                                                                        t.acceptanceStatus === 'REJECTED' ? 'bg-rose-500/20 text-rose-400' :
-                                                                        'bg-amber-500/20 text-amber-400'
-                                                                    }`}>
-                                                                        {t.acceptanceStatus}
-                                                                    </span>
-                                                                </div>
-                                                                <div className="flex gap-2 mt-4">
-                                                                    {t.acceptanceStatus === 'PENDING' && (
-                                                                        <>
-                                                                            <button 
-                                                                                onClick={() => handleAcceptTeam(t.id)}
-                                                                                className="flex-1 bg-emerald-600 hover:bg-emerald-500 py-1.5 rounded-lg text-xs font-bold transition"
-                                                                            >
-                                                                                Accept
-                                                                            </button>
-                                                                            <button 
-                                                                                onClick={() => handleRejectTeam(t.id)}
-                                                                                className="flex-1 bg-rose-600 hover:bg-rose-500 py-1.5 rounded-lg text-xs font-bold transition"
-                                                                            >
-                                                                                Reject
-                                                                            </button>
-                                                                        </>
-                                                                    )}
-                                                                </div>
+                                                <div style={{ display: 'grid', gap: '0.75rem', maxHeight: '400px', overflowY: 'auto' }}>
+                                                    {teams.map(t => (
+                                                        <div key={t.id} style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-soft)' }}>
+                                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
+                                                                <p style={{ fontSize: '0.8125rem', fontWeight: 800 }}>{t.teamName}</p>
+                                                                <span style={{ fontSize: '0.625rem', fontWeight: 700, color: t.acceptanceStatus === 'ACCEPTED' ? 'var(--accent)' : 'var(--text-muted)' }}>{t.acceptanceStatus}</span>
                                                             </div>
-                                                        ))}
-                                                        {teams.length === 0 && <p className="text-slate-600 text-sm italic py-4">No teams found.</p>}
-                                                    </div>
+                                                            {t.acceptanceStatus === 'PENDING' && (
+                                                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', marginTop: '0.75rem' }}>
+                                                                    <button onClick={() => handleAcceptTeam(t.id)} className="btn btn-primary" style={{ padding: '0.25rem', fontSize: '0.625rem' }}>Accept</button>
+                                                                    <button onClick={() => handleRejectTeam(t.id)} className="btn" style={{ padding: '0.25rem', fontSize: '0.625rem', border: '1px solid var(--border)' }}>Reject</button>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    ))}
+                                                    {teams.length === 0 && <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textAlign: 'center' }}>No teams.</p>}
                                                 </div>
                                             )}
 
                                             {activeManagementTab === 'LEADERBOARD' && (
-                                                <div className="space-y-4 animate-in fade-in duration-300">
-                                                    <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider">Current Standings</h3>
-                                                    <div className="space-y-2">
-                                                        {leaderboard.slice(0, 5).map((entry, idx) => (
-                                                            <div key={entry.teamId} className="flex items-center justify-between p-3 bg-slate-900/50 rounded-xl border border-white/5">
-                                                                <div className="flex items-center gap-3">
-                                                                    <span className={`w-6 h-6 flex items-center justify-center rounded-full text-[10px] font-bold ${idx === 0 ? 'bg-yellow-500 text-black' : 'bg-slate-800'}`}>
-                                                                        {idx + 1}
-                                                                    </span>
-                                                                    <p className="font-semibold text-sm">{entry.teamName}</p>
-                                                                </div>
-                                                                <p className="font-mono text-indigo-400 font-bold">{entry.totalScore?.toFixed(1) || '0.0'}</p>
-                                                            </div>
-                                                        ))}
-                                                        {leaderboard.length === 0 && <p className="text-slate-600 text-sm italic py-4 text-center">No scores recorded yet.</p>}
-                                                    </div>
+                                                <div style={{ display: 'grid', gap: '0.5rem' }}>
+                                                    {leaderboard.slice(0, 8).map((entry, idx) => (
+                                                        <div key={entry.teamId} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', borderBottom: '1px solid var(--border)' }}>
+                                                            <span style={{ fontSize: '0.8125rem', fontWeight: 600 }}><span style={{ color: 'var(--text-muted)', marginRight: '0.5rem' }}>{idx + 1}</span> {entry.teamName}</span>
+                                                            <span style={{ fontSize: '0.8125rem', fontWeight: 800, color: 'var(--accent)' }}>{entry.totalScore?.toFixed(1)}</span>
+                                                        </div>
+                                                    ))}
+                                                    {leaderboard.length === 0 && <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textAlign: 'center' }}>No scores.</p>}
                                                 </div>
                                             )}
 
                                             {activeManagementTab === 'GENERAL' && (
-                                                <div className="space-y-6 animate-in fade-in duration-300">
-                                                    <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider">Evaluation Coverage</h3>
+                                                <div>
                                                     {hackathonAnalytics ? (
-                                                        <div className="space-y-6">
-                                                            <div className="grid grid-cols-1 gap-4">
-                                                                <div className="p-4 bg-slate-900/50 rounded-2xl border border-white/5">
-                                                                    <p className="text-xs text-slate-500 mb-2 uppercase font-bold">Judge Progress</p>
-                                                                    <div className="space-y-4">
-                                                                        {hackathonAnalytics.judgeStats.map(js => (
-                                                                            <div key={js.judgeId} className="space-y-1">
-                                                                                <div className="flex justify-between text-[11px]">
-                                                                                    <span>{js.judgeEmail}</span>
-                                                                                    <span className="font-mono">{js.evaluatedCount}/{js.totalAssigned}</span>
-                                                                                </div>
-                                                                                <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
-                                                                                    <div 
-                                                                                        className="h-full bg-indigo-500 transition-all duration-1000" 
-                                                                                        style={{ width: `${(js.evaluatedCount / js.totalAssigned) * 100}%` }}
-                                                                                    ></div>
-                                                                                </div>
+                                                        <div style={{ display: 'grid', gap: '1.25rem' }}>
+                                                            <div>
+                                                                <p style={{ fontSize: '0.625rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.75rem' }}>Judge Progress</p>
+                                                                <div style={{ display: 'grid', gap: '0.75rem' }}>
+                                                                    {hackathonAnalytics.judgeStats.map(js => (
+                                                                        <div key={js.judgeId}>
+                                                                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.625rem', fontWeight: 700, marginBottom: '0.25rem' }}>
+                                                                                <span>{js.judgeEmail.split('@')[0]}</span>
+                                                                                <span>{js.evaluatedCount}/{js.totalAssigned}</span>
                                                                             </div>
-                                                                        ))}
-                                                                    </div>
-                                                                </div>
-                                                                <div className="p-4 bg-slate-900/50 rounded-2xl border border-white/5">
-                                                                    <p className="text-xs text-slate-500 mb-2 uppercase font-bold">Team Completion</p>
-                                                                    <div className="grid grid-cols-2 gap-2">
-                                                                        {hackathonAnalytics.teamStats.map(ts => (
-                                                                            <div key={ts.teamId} className="p-2 bg-slate-950 rounded-lg text-[10px] flex justify-between items-center">
-                                                                                <span className="truncate mr-2">{ts.teamName}</span>
-                                                                                <span className={`font-bold ${ts.evaluatedByCount === ts.totalJudges ? 'text-emerald-400' : 'text-amber-400'}`}>
-                                                                                    {ts.evaluatedByCount}/{ts.totalJudges}
-                                                                                </span>
+                                                                            <div style={{ height: '4px', background: 'var(--border)', borderRadius: '2px', overflow: 'hidden' }}>
+                                                                                <div style={{ height: '100%', background: 'var(--accent)', width: `${(js.evaluatedCount / js.totalAssigned) * 100}%` }}></div>
                                                                             </div>
-                                                                        ))}
-                                                                    </div>
+                                                                        </div>
+                                                                    ))}
                                                                 </div>
                                                             </div>
                                                         </div>
                                                     ) : (
-                                                        <div className="p-8 text-center text-slate-600 italic">Loading analytics...</div>
+                                                        <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textAlign: 'center' }}>Loading...</p>
                                                     )}
                                                 </div>
                                             )}
                                             
                                             {activeManagementTab === 'AUDIT' && (
-                                                <div className="space-y-4 animate-in fade-in duration-300">
-                                                    <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider">Recent Activity</h3>
-                                                    <div className="overflow-x-auto">
-                                                        <table className="w-full text-left text-xs">
-                                                            <thead>
-                                                                <tr className="text-slate-500 border-b border-white/5">
-                                                                    <th className="pb-2">Action</th>
-                                                                    <th className="pb-2">User</th>
-                                                                    <th className="pb-2">Time</th>
-                                                                </tr>
-                                                            </thead>
-                                                            <tbody className="text-slate-300">
-                                                                {hackathonAuditLogs.map(log => (
-                                                                    <tr key={log.id} className="border-b border-white/5 last:border-0">
-                                                                        <td className="py-2 font-semibold text-indigo-400">{log.action}</td>
-                                                                        <td className="py-2">{log.userId}</td>
-                                                                        <td className="py-2 text-[10px] text-slate-500">{new Date(log.createdAt).toLocaleString()}</td>
-                                                                    </tr>
-                                                                ))}
-                                                            </tbody>
-                                                        </table>
-                                                        {hackathonAuditLogs.length === 0 && (
-                                                            <div className="p-8 text-center text-slate-600 italic">No logs found for this hackathon.</div>
-                                                        )}
-                                                    </div>
+                                                <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                                                    {hackathonAuditLogs.map(log => (
+                                                        <div key={log.id} style={{ padding: '0.5rem 0', borderBottom: '1px solid var(--border)' }}>
+                                                            <p style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--accent)' }}>{log.action}</p>
+                                                            <p style={{ fontSize: '0.625rem', color: 'var(--text-muted)' }}>{new Date(log.createdAt).toLocaleDateString()}</p>
+                                                        </div>
+                                                    ))}
+                                                    {hackathonAuditLogs.length === 0 && <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textAlign: 'center' }}>No logs.</p>}
                                                 </div>
                                             )}
                                         </div>
@@ -527,40 +480,9 @@ export default function HackathonPage() {
                                 )}
                              </div>
                         )}
-                    </div>
+                    </aside>
                 </div>
             </div>
-
-            {/* Content Tabs or Extra Info */}
-            <div className="max-w-7xl mx-auto px-6 py-12">
-                <div className="grid md:grid-cols-3 gap-8">
-                    <div className="md:col-span-2 space-y-12">
-                        <section>
-                            <h2 className="text-2xl font-bold mb-6 flex items-center">
-                                <span className="w-8 h-1 bg-indigo-500 rounded-full mr-4"></span>
-                                Rules & Requirements
-                            </h2>
-                            <div className="bg-slate-900/40 p-6 rounded-2xl border border-slate-800">
-                                <ul className="space-y-4 text-slate-400">
-                                    <li className="flex items-start">
-                                        <span className="text-indigo-500 mr-3 mt-1">✓</span>
-                                        Max 4 members per team.
-                                    </li>
-                                    <li className="flex items-start">
-                                        <span className="text-indigo-500 mr-3 mt-1">✓</span>
-                                        Projects must be built during the event timeframe.
-                                    </li>
-                                    <li className="flex items-start">
-                                        <span className="text-indigo-500 mr-3 mt-1">✓</span>
-                                        Open-source projects only.
-                                    </li>
-                                </ul>
-                            </div>
-                        </section>
-                    </div>
-
-                </div>
-            </div>
-        </div>
+        </Layout>
     );
 }

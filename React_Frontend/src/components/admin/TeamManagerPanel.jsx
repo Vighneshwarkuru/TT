@@ -1,29 +1,18 @@
 import { useEffect, useState } from 'react';
 import axiosInstance from '../../api/axiosInstance';
 
-const s = {
-  title: { fontSize: 22, fontWeight: 600, marginBottom: 16 },
-  table: { width: '100%', borderCollapse: 'collapse', background: '#fff', borderRadius: 8, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' },
-  th: { background: '#f5f5f5', padding: '10px 12px', textAlign: 'left', fontSize: 13, fontWeight: 600, borderBottom: '1px solid #e0e0e0' },
-  td: { padding: '10px 12px', fontSize: 13, borderBottom: '1px solid #f0f0f0' },
-  row: { display: 'flex', gap: 8 },
-  btn: { padding: '6px 14px', borderRadius: 5, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 600 },
-  btnSuccess: { background: '#388e3c', color: '#fff' },
-  btnDanger: { background: '#d32f2f', color: '#fff' },
-  badge: { padding: '2px 8px', borderRadius: 12, fontSize: 11, fontWeight: 600 },
-  error: { color: '#d32f2f', fontSize: 13, marginBottom: 10 },
-};
-
-const statusBadge = status => {
-  const colors = { ACCEPTED: '#388e3c', REJECTED: '#d32f2f', PENDING: '#f57c00' };
-  return { ...s.badge, background: colors[status] || '#999', color: '#fff' };
-};
-
 export default function TeamManagerPanel() {
   const [teams, setTeams] = useState([]);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true);
 
-  const load = () => axiosInstance.get('/api/admin/teams').then(r => setTeams(r.data)).catch(() => { });
+  const load = () => {
+    setLoading(true);
+    axiosInstance.get('/api/admin/teams')
+      .then(r => setTeams(r.data))
+      .catch(() => setError('Failed to synchronize team data.'))
+      .finally(() => setLoading(false));
+  };
 
   useEffect(() => { load(); }, []);
 
@@ -46,45 +35,78 @@ export default function TeamManagerPanel() {
   };
 
   return (
-    <div>
-      <div style={s.title}>Team Manager</div>
-      {error && <div style={s.error}>{error}</div>}
-      <table style={s.table}>
-        <thead>
-          <tr>
-            <th style={s.th}>Team Name</th>
-            <th style={s.th}>Hackathon ID</th>
-            <th style={s.th}>Status</th>
-            <th style={s.th}>Members</th>
-            <th style={s.th}>GitHub</th>
-            <th style={s.th}>Demo</th>
-            <th style={s.th}>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {teams.map(t => (
-            <tr key={t.id}>
-              <td style={s.td}>{t.teamName}</td>
-              <td style={s.td}>{t.hackathonId}</td>
-              <td style={s.td}><span style={statusBadge(t.acceptanceStatus)}>{t.acceptanceStatus}</span></td>
-              <td style={s.td}>{t.memberCount}</td>
-              <td style={s.td}>{t.githubUrl ? <a href={t.githubUrl} target="_blank" rel="noreferrer">Link</a> : '—'}</td>
-              <td style={s.td}>{t.demoUrl ? <a href={t.demoUrl} target="_blank" rel="noreferrer">Link</a> : '—'}</td>
-              <td style={s.td}>
-                <div style={s.row}>
-                  {t.acceptanceStatus === 'PENDING' && (
-                    <>
-                      <button style={{ ...s.btn, ...s.btnSuccess }} onClick={() => handleAccept(t.id)}>Accept</button>
-                      <button style={{ ...s.btn, ...s.btnDanger }} onClick={() => handleReject(t.id)}>Reject</button>
-                    </>
-                  )}
-                  {t.acceptanceStatus !== 'PENDING' && <span style={{ fontSize: 12, color: '#777', fontStyle: 'italic' }}>No actions</span>}
-                </div>
-              </td>
+    <div style={{ animation: 'fadeIn 0.3s ease-out' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+        <h2 style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.02em' }}>Team Registry</h2>
+        <button onClick={load} className="btn" style={{ padding: '0.5rem 1rem', background: 'var(--bg-soft)', border: '1px solid var(--border)', fontSize: '0.75rem', fontWeight: 700 }}>Refresh</button>
+      </div>
+
+      {error && (
+        <div style={{ padding: '1rem', background: 'rgba(239, 68, 68, 0.1)', color: 'var(--error)', borderRadius: '8px', fontSize: '0.875rem', fontWeight: 600, marginBottom: '1.5rem', borderLeft: '4px solid var(--error)' }}>
+          {error}
+        </div>
+      )}
+
+      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ background: 'var(--bg-soft)', borderBottom: '1px solid var(--border)' }}>
+              <th style={{ padding: '1rem 1.5rem', textAlign: 'left', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Identifier</th>
+              <th style={{ padding: '1rem 1.5rem', textAlign: 'left', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Context</th>
+              <th style={{ padding: '1rem 1.5rem', textAlign: 'left', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Status</th>
+              <th style={{ padding: '1rem 1.5rem', textAlign: 'left', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Assets</th>
+              <th style={{ padding: '1rem 1.5rem', textAlign: 'right', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Operations</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {loading ? (
+              <tr>
+                <td colSpan="5" style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.875rem' }}>Synchronizing Registry...</td>
+              </tr>
+            ) : teams.length === 0 ? (
+              <tr>
+                <td colSpan="5" style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.875rem' }}>No active team registrations found.</td>
+              </tr>
+            ) : teams.map(t => (
+              <tr key={t.id} style={{ borderBottom: '1px solid var(--border)', transition: 'background 0.2s' }}>
+                <td style={{ padding: '1.25rem 1.5rem' }}>
+                  <p style={{ fontWeight: 700, fontSize: '0.9375rem', marginBottom: '0.25rem' }}>{t.teamName}</p>
+                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{t.memberCount} Members Assigned</p>
+                </td>
+                <td style={{ padding: '1.25rem 1.5rem' }}>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)' }}>ID: {t.hackathonId}</span>
+                </td>
+                <td style={{ padding: '1.25rem 1.5rem' }}>
+                  <span className={`badge ${
+                    t.acceptanceStatus === 'ACCEPTED' ? 'badge-success' : 
+                    t.acceptanceStatus === 'REJECTED' ? '' : // Default for rejected
+                    ''
+                  }`} style={{ fontSize: '0.625rem' }}>
+                    {t.acceptanceStatus}
+                  </span>
+                </td>
+                <td style={{ padding: '1.25rem 1.5rem' }}>
+                  <div style={{ display: 'flex', gap: '0.75rem' }}>
+                    {t.githubUrl && <a href={t.githubUrl} target="_blank" rel="noreferrer" style={{ fontSize: '0.75rem', color: 'var(--accent)', fontWeight: 600, textDecoration: 'none' }}>Source</a>}
+                    {t.demoUrl && <a href={t.demoUrl} target="_blank" rel="noreferrer" style={{ fontSize: '0.75rem', color: 'var(--accent)', fontWeight: 600, textDecoration: 'none' }}>Demo</a>}
+                    {!t.githubUrl && !t.demoUrl && <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>&mdash;</span>}
+                  </div>
+                </td>
+                <td style={{ padding: '1.25rem 1.5rem', textAlign: 'right' }}>
+                  {t.acceptanceStatus === 'PENDING' ? (
+                    <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                      <button onClick={() => handleAccept(t.id)} className="btn btn-primary" style={{ padding: '0.4rem 0.8rem', fontSize: '0.75rem' }}>Approve</button>
+                      <button onClick={() => handleReject(t.id)} className="btn" style={{ padding: '0.4rem 0.8rem', fontSize: '0.75rem', background: 'var(--bg-soft)', border: '1px solid var(--border)' }}>Reject</button>
+                    </div>
+                  ) : (
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>Locked</span>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

@@ -7,6 +7,7 @@ export function TeamBrowserPanel({ hackathons = [] }) {
     const [selectedHackathon, setSelectedHackathon] = useState('');
     const [teams, setTeams] = useState([]);
     const [myTeam, setMyTeam] = useState(null);
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         axiosInstance.get('/api/participant/team').then(r => setMyTeam(r.data)).catch(() => setMyTeam(null));
@@ -14,153 +15,202 @@ export function TeamBrowserPanel({ hackathons = [] }) {
 
     useEffect(() => {
         if (selectedHackathon) {
-            axiosInstance.get(`/api/public/teams/${selectedHackathon}`).then(r => setTeams(r.data)).catch(() => setTeams([]));
+            setLoading(true);
+            axiosInstance.get(`/api/public/teams/${selectedHackathon}`)
+                .then(r => setTeams(r.data))
+                .catch(() => setTeams([]))
+                .finally(() => setLoading(false));
         }
     }, [selectedHackathon]);
 
     const requestJoin = async (teamId) => {
         try {
             await axiosInstance.post('/api/participant/team/join', { teamId });
-            alert('Join request sent!');
+            alert('Application submitted successfully!');
         } catch (e) {
-            alert(e.response?.data?.message || 'Error sending join request. You might already have a pending request or be on a team.');
+            alert(e.response?.data?.message || 'Synchronization error. You may have a pending request or active membership.');
         }
     };
 
     return (
-        <div className="p-4 bg-white shadow rounded">
-            <h2 className="text-xl font-bold mb-4">Browse Teams</h2>
-            <div className="mb-4">
-                <label className="block mb-1 font-semibold">Select Hackathon</label>
-                <select className="border p-2 w-full rounded" value={selectedHackathon} onChange={e => setSelectedHackathon(e.target.value)}>
-                    <option value="">-- Select Hackathon --</option>
+        <div style={{ animation: 'fadeIn 0.3s ease-out' }}>
+            <header style={{ marginBottom: '2.5rem' }}>
+                <h2 style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '0.5rem' }}>Venture Browser</h2>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Discover and join high-impact teams in the ecosystem.</p>
+            </header>
+
+            <div className="card" style={{ padding: '1.5rem', marginBottom: '2.5rem', background: 'var(--bg-soft)', border: 'none' }}>
+                <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>Select Competition</label>
+                <select className="input" style={{ background: 'white', maxWidth: '400px' }} value={selectedHackathon} onChange={e => setSelectedHackathon(e.target.value)}>
+                    <option value="">Choose competition...</option>
                     {hackathons.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
                 </select>
             </div>
 
-            {selectedHackathon && (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {teams.map(t => (
-                        <div key={t.id} className="border p-4 rounded bg-gray-50 flex flex-col justify-between">
+            {selectedHackathon ? (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
+                    {loading ? (
+                        <div className="card col-span-full" style={{ padding: '4rem', textAlign: 'center' }}>
+                            <p style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Synchronizing active ventures...</p>
+                        </div>
+                    ) : teams.length === 0 ? (
+                        <div className="card col-span-full" style={{ padding: '4rem', textAlign: 'center', border: '1px dashed var(--border)', background: 'var(--bg-soft)' }}>
+                            <p style={{ color: 'var(--text-muted)', fontWeight: 600 }}>No ventures established in this competition yet.</p>
+                        </div>
+                    ) : teams.map(t => (
+                        <div key={t.id} className="card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '1.75rem', transition: 'transform 0.2s ease', cursor: 'default' }}
+                             onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-4px)'}
+                             onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}>
                             <div>
-                                <h3 className="font-bold text-lg text-indigo-700">{t.teamName}</h3>
-                                <p className="text-sm text-gray-600 mb-2">Team ID: {t.id}</p>
-                                <p className="text-sm font-semibold mb-4">Members: {t.memberCount}/{t.maxCapacity || 4}</p>
+                                <h3 style={{ fontSize: '1.125rem', fontWeight: 800, marginBottom: '0.5rem', color: 'var(--accent)' }}>{t.teamName}</h3>
+                                <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '1.25rem' }}>Venturer ID: #{t.id}</p>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem' }}>
+                                    <div style={{ flex: 1, height: '4px', background: 'var(--bg-soft)', borderRadius: '2px', overflow: 'hidden' }}>
+                                        <div style={{ height: '100%', width: `${(t.memberCount / (t.maxCapacity || 4)) * 100}%`, background: 'var(--accent)' }}></div>
+                                    </div>
+                                    <span style={{ fontSize: '0.625rem', fontWeight: 800, color: 'var(--text-muted)' }}>{t.memberCount}/{t.maxCapacity || 4} OCCUPIED</span>
+                                </div>
                             </div>
                             <button
                                 onClick={() => requestJoin(t.id)}
                                 disabled={myTeam !== null || t.memberCount >= (t.maxCapacity || 4)}
-                                className="bg-indigo-600 text-white py-2 rounded font-semibold disabled:bg-gray-400 disabled:cursor-not-allowed hover:bg-indigo-700 transition"
+                                className="btn btn-primary"
+                                style={{ width: '100%', fontSize: '0.75rem', letterSpacing: '0.05em' }}
                             >
-                                {t.memberCount >= (t.maxCapacity || 4) ? 'Team Full' : myTeam ? 'Already on a Team' : 'Request to Join'}
+                                {t.memberCount >= (t.maxCapacity || 4) ? 'CAPACITY REACHED' : myTeam ? 'MEMBER OF ANOTHER TEAM' : 'REQUEST ALLIANCE'}
                             </button>
                         </div>
                     ))}
-                    {teams.length === 0 && <p className="text-gray-500 col-span-full">No teams created yet.</p>}
                 </div>
-            )}
+            ) : null}
         </div>
     );
 }
 
 export function JoinRequestsPanel() {
     const [requests, setRequests] = useState([]);
+    const [loading, setLoading] = useState(false);
 
     const load = () => {
-        axiosInstance.get('/api/participant/team/join-requests').then(r => setRequests(r.data)).catch(() => setRequests([]));
+        setLoading(true);
+        axiosInstance.get('/api/participant/team/join-requests')
+            .then(r => setRequests(r.data))
+            .catch(() => setRequests([]))
+            .finally(() => setLoading(false));
     };
     useEffect(() => { load(); }, []);
 
     const accept = async (id) => {
-        try { await axiosInstance.put(`/api/participant/team/join-requests/${id}/accept`); load(); } catch (e) { alert('Error accepting request'); }
+        try { await axiosInstance.put(`/api/participant/team/join-requests/${id}/accept`); load(); } catch (e) { alert('Error acknowledging alliance request.'); }
     };
     const reject = async (id) => {
-        try { await axiosInstance.put(`/api/participant/team/join-requests/${id}/reject`); load(); } catch (e) { alert('Error rejecting request'); }
+        try { await axiosInstance.put(`/api/participant/team/join-requests/${id}/reject`); load(); } catch (e) { alert('Error rejecting request.'); }
     };
 
     return (
-        <div className="p-4 bg-white shadow rounded">
-            <h2 className="text-xl font-bold mb-4">Join Requests</h2>
-            <table className="min-w-full text-left">
-                <thead>
-                    <tr className="border-b">
-                        <th className="py-2">User Name</th>
-                        <th>Email</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {requests.map(r => (
-                        <tr key={r.id} className="border-b">
-                            <td className="py-2">{r.requesterFirstName} {r.requesterLastName}</td>
-                            <td>{r.requesterEmail}</td>
-                            <td>
-                                <span className={`px-2 py-1 text-xs rounded ${r.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' : r.status === 'ACCEPTED' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                                    {r.status}
-                                </span>
-                            </td>
-                            <td>
-                                {r.status === 'PENDING' && (
-                                    <>
-                                        <button onClick={() => accept(r.id)} className="mr-2 text-green-600 font-semibold hover:text-green-800">Accept</button>
-                                        <button onClick={() => reject(r.id)} className="text-red-600 font-semibold hover:text-red-800">Reject</button>
-                                    </>
-                                )}
-                            </td>
+        <div style={{ animation: 'fadeIn 0.3s ease-out' }}>
+            <header style={{ marginBottom: '2.5rem' }}>
+                <h2 style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '0.5rem' }}>Alliance Requests</h2>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Manage pending join inquiries from other participants.</p>
+            </header>
+
+            <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
+                        <tr style={{ background: 'var(--bg-soft)', borderBottom: '1px solid var(--border)' }}>
+                            <th style={{ padding: '1rem 1.5rem', textAlign: 'left', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Identity</th>
+                            <th style={{ padding: '1rem 1.5rem', textAlign: 'left', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Authorization Status</th>
+                            <th style={{ padding: '1rem 1.5rem', textAlign: 'right', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Operations</th>
                         </tr>
-                    ))}
-                    {requests.length === 0 && <tr><td colSpan="4" className="py-4 text-center text-gray-500">No pending join requests.</td></tr>}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {loading ? (
+                            <tr><td colSpan="3" style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.875rem' }}>Synchronizing request stream...</td></tr>
+                        ) : requests.length === 0 ? (
+                            <tr><td colSpan="3" style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.875rem' }}>No pending alliance requests.</td></tr>
+                        ) : requests.map(r => (
+                            <tr key={r.id} style={{ borderBottom: '1px solid var(--border)' }}>
+                                <td style={{ padding: '1.25rem 1.5rem' }}>
+                                    <p style={{ fontWeight: 800, fontSize: '0.9375rem', marginBottom: '0.25rem' }}>{r.requesterFirstName} {r.requesterLastName}</p>
+                                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{r.requesterEmail}</p>
+                                </td>
+                                <td style={{ padding: '1.25rem 1.5rem' }}>
+                                    <span className={`badge ${r.status === 'ACCEPTED' ? 'badge-success' : r.status === 'PENDING' ? 'badge-accent' : ''}`} style={{ fontSize: '0.625rem' }}>
+                                        {r.status}
+                                    </span>
+                                </td>
+                                <td style={{ padding: '1.25rem 1.5rem', textAlign: 'right' }}>
+                                    {r.status === 'PENDING' && (
+                                        <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
+                                            <button onClick={() => accept(r.id)} className="btn btn-primary" style={{ padding: '0.4rem 1rem', fontSize: '0.625rem', borderRadius: '4px' }}>APPROVE</button>
+                                            <button onClick={() => reject(r.id)} className="btn" style={{ padding: '0.4rem 1rem', fontSize: '0.625rem', borderRadius: '4px', background: 'none', border: '1px solid var(--border)' }}>DECLINE</button>
+                                        </div>
+                                    )}
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
         </div>
     );
 }
 
 export function TeamProfilePanel({ hackathons = [] }) {
     const [myTeam, setMyTeam] = useState(null);
+    const [isCreating, setIsCreating] = useState(false);
     const { register, handleSubmit } = useForm();
     const { user } = useAuth();
 
     const load = () => {
-        console.log('TeamProfilePanel loading team info...');
         axiosInstance.get('/api/participant/team')
             .then(r => setMyTeam(r.data))
-            .catch(err => {
-                console.log('TeamProfile - No team found:', err.response?.status);
-                setMyTeam(null);
-            });
+            .catch(() => setMyTeam(null));
     };
 
-    useEffect(() => {
-        load();
-    }, []);
+    useEffect(() => { load(); }, []);
 
     const createTeam = async (data) => {
+        setIsCreating(true);
         try {
             await axiosInstance.post('/api/participant/team', data);
-            alert('Team created successfully!');
+            alert('Venture successfully established.');
             load();
         } catch (e) {
-            alert(e.response?.data?.message || 'Error creating team.');
+            alert(e.response?.data?.message || 'Error initializing venture. Duplicate name or membership policy violation.');
+        } finally {
+            setIsCreating(false);
         }
     };
 
     if (myTeam) {
         return (
-            <div className="p-6 bg-white shadow rounded border border-gray-200">
-                <h2 className="text-2xl font-bold mb-4 text-indigo-700">{myTeam.teamName}</h2>
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                    <div><p className="text-sm text-gray-500 font-semibold">Hackathon ID</p><p className="text-lg">{myTeam.hackathonId}</p></div>
-                    <div>
-                        <p className="text-sm text-gray-500 font-semibold">Status</p>
-                        <span className={`px-2 py-1 text-sm rounded inline-block mt-1 ${myTeam.acceptanceStatus === 'ACCEPTED' ? 'bg-green-100 text-green-800' : myTeam.acceptanceStatus === 'REJECTED' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'}`}>
-                            {myTeam.acceptanceStatus}
-                        </span>
-                    </div>
-                    <div className="col-span-2">
-                        <p className="text-sm text-gray-500 font-semibold">Team Created By</p>
-                        <p className="text-md">{myTeam.createdBy?.id === user?.id ? 'You (Team Lead)' : `User: ${myTeam.createdBy?.email || myTeam.createdBy?.id}`}</p>
+            <div style={{ animation: 'fadeIn 0.3s ease-out' }}>
+                <header style={{ marginBottom: '2.5rem' }}>
+                    <h2 style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '0.5rem' }}>Venture Identity</h2>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Core parameters of your current competition alliance.</p>
+                </header>
+
+                <div className="card" style={{ padding: '2rem', background: 'var(--bg-soft)', border: 'none' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '2.5rem' }}>
+                        <div>
+                            <p style={{ fontSize: '0.625rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.75rem' }}>Venture Cognomen</p>
+                            <h3 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--accent)' }}>{myTeam.teamName}</h3>
+                        </div>
+                        <div>
+                            <p style={{ fontSize: '0.625rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.75rem' }}>Competition Context</p>
+                            <p style={{ fontSize: '1rem', fontWeight: 700 }}>Identifier #{myTeam.hackathonId}</p>
+                        </div>
+                        <div>
+                            <p style={{ fontSize: '0.625rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.75rem' }}>Authorization Status</p>
+                            <span className={`badge ${myTeam.acceptanceStatus === 'ACCEPTED' ? 'badge-success' : myTeam.acceptanceStatus === 'REJECTED' ? 'badge-error' : 'badge-accent'}`} style={{ fontSize: '0.625rem' }}>
+                                {myTeam.acceptanceStatus}
+                            </span>
+                        </div>
+                        <div>
+                            <p style={{ fontSize: '0.625rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.75rem' }}>Alliance Architect</p>
+                            <p style={{ fontSize: '0.875rem', fontWeight: 700 }}>{myTeam.createdBy?.id === user?.id ? 'Initial Architect (You)' : (myTeam.createdBy?.email || 'External Architect')}</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -168,22 +218,26 @@ export function TeamProfilePanel({ hackathons = [] }) {
     }
 
     return (
-        <div className="p-4 bg-white shadow rounded max-w-lg">
-            <h2 className="text-xl font-bold mb-4">Create a Team</h2>
-            <form onSubmit={handleSubmit(createTeam)}>
-                <div className="mb-4">
-                    <label className="block mb-1 font-semibold">Hackathon</label>
-                    <select className="border p-2 w-full rounded" {...register('hackathonId', { required: true })}>
-                        <option value="">-- Select Hackathon --</option>
+        <div style={{ animation: 'fadeIn 0.3s ease-out', maxWidth: '600px' }}>
+            <header style={{ marginBottom: '2.5rem' }}>
+                <h2 style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '0.5rem' }}>Establish Venture</h2>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Initialize a new team to begin your competition trajectory.</p>
+            </header>
+
+            <form onSubmit={handleSubmit(createTeam)} className="card" style={{ padding: '2rem' }}>
+                <div style={{ marginBottom: '1.75rem' }}>
+                    <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>Competition</label>
+                    <select className="input" {...register('hackathonId', { required: true })}>
+                        <option value="">Choose competition...</option>
                         {hackathons.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
                     </select>
                 </div>
-                <div className="mb-4">
-                    <label className="block mb-1 font-semibold">Team Name</label>
-                    <input className="border p-2 w-full rounded" {...register('teamName', { required: true })} />
+                <div style={{ marginBottom: '2rem' }}>
+                    <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>Venture Title</label>
+                    <input className="input" placeholder="Enter high-impact venture name..." {...register('teamName', { required: true })} />
                 </div>
-                <button type="submit" className="bg-indigo-600 text-white px-4 py-2 w-full rounded hover:bg-indigo-700 font-semibold transition">
-                    Create Team
+                <button type="submit" disabled={isCreating} className="btn btn-primary" style={{ width: '100%', padding: '1rem', fontSize: '0.875rem', letterSpacing: '0.05em' }}>
+                    {isCreating ? 'SYNCHRONIZING...' : 'INITIALIZE VENTURE'}
                 </button>
             </form>
         </div>
@@ -192,55 +246,73 @@ export function TeamProfilePanel({ hackathons = [] }) {
 
 export function TeamMembersPanel() {
     const [myTeam, setMyTeam] = useState(null);
+    const [loading, setLoading] = useState(false);
     const { user } = useAuth();
 
     const load = () => {
-        axiosInstance.get('/api/participant/team').then(r => setMyTeam(r.data)).catch(() => setMyTeam(null));
+        setLoading(true);
+        axiosInstance.get('/api/participant/team')
+            .then(r => setMyTeam(r.data))
+            .catch(() => setMyTeam(null))
+            .finally(() => setLoading(false));
     };
     useEffect(() => { load(); }, []);
 
     const removeMember = async (userId) => {
-        if (!window.confirm('Are you sure you want to remove this member?')) return;
+        if (!window.confirm('Acknowledge member removal? Data synchronization will be irreversible.')) return;
         try {
             await axiosInstance.delete(`/api/participant/team/members/${userId}`);
             load();
         } catch (e) {
-            alert('Error removing member.');
+            alert('Membership alteration failed. Verify permissions.');
         }
     };
 
-    if (!myTeam) return <div className="p-4 text-gray-500 italic bg-white rounded shadow">You are not on a team yet.</div>;
+    if (loading) return <div style={{ padding: '4rem', textAlign: 'center', color: 'var(--text-muted)', fontWeight: 600 }}>Synchronizing active registry...</div>;
+    if (!myTeam) return <div className="card" style={{ padding: '4rem', textAlign: 'center', border: '1px dashed var(--border)', background: 'var(--bg-soft)' }}><p style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Inactive status. Join or establish a venture to see members.</p></div>;
 
     const isLead = myTeam.createdBy?.id === user?.id;
 
     return (
-        <div className="p-4 bg-white shadow rounded">
-            <h2 className="text-xl font-bold mb-4">Team Members ({myTeam.members?.length || 0})</h2>
-            <ul className="divide-y border border-gray-200 rounded">
-                {myTeam.members?.map(m => (
-                    <li key={m.id} className="py-3 px-4 flex justify-between items-center hover:bg-gray-50">
-                        <div>
-                            <span className="font-semibold block">{m.email}</span>
-                            <span className="text-sm text-gray-500">Joined: {m.createdAt ? new Date(m.createdAt).toLocaleDateString() : 'N/A'}</span>
-                        </div>
-                        {isLead && m.userId !== user?.id && (
-                            <button
-                                onClick={() => removeMember(m.userId)}
-                                className="text-red-500 hover:text-red-700 text-sm font-semibold px-2 py-1 rounded border border-red-200 hover:bg-red-50"
-                            >
-                                Remove
-                            </button>
-                        )}
-                        {m.id === myTeam.createdBy?.id && <span className="text-xs bg-indigo-100 text-indigo-800 px-2 py-1 rounded border border-indigo-200 font-semibold">Team Lead</span>}
-                    </li>
-                ))}
-            </ul>
+        <div style={{ animation: 'fadeIn 0.3s ease-out' }}>
+            <header style={{ marginBottom: '2.5rem' }}>
+                <h2 style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '0.5rem' }}>Venture Alliance ({myTeam.members?.length || 0})</h2>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Registry of participants currently mapped to this alliance.</p>
+            </header>
+
+            <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <tbody>
+                        {myTeam.members?.map(m => (
+                            <tr key={m.id} style={{ borderBottom: '1px solid var(--border)' }}>
+                                <td style={{ padding: '1.25rem 2rem' }}>
+                                    <p style={{ fontWeight: 800, fontSize: '1rem' }}>{m.email}</p>
+                                    <p style={{ fontSize: '0.625rem', color: 'var(--text-muted)', textTransform: 'uppercase', marginTop: '0.25rem', letterSpacing: '0.025em' }}>Registered: {m.createdAt ? new Date(m.createdAt).toLocaleDateString() : 'Historical'}</p>
+                                </td>
+                                <td style={{ padding: '1.25rem 2rem', textAlign: 'right' }}>
+                                    {isLead && m.userId !== user?.id && (
+                                        <button
+                                            onClick={() => removeMember(m.userId)}
+                                            className="btn"
+                                            style={{ background: 'none', border: '1px solid var(--border)', color: 'var(--error)', fontSize: '0.625rem', fontWeight: 800, padding: '0.5rem 1rem' }}
+                                        >
+                                            TERMINATE ALLIANCE
+                                        </button>
+                                    )}
+                                    {m.id === myTeam.createdBy?.id && <span className="badge badge-primary" style={{ fontSize: '0.625rem' }}>INITIAL ARCHITECT</span>}
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
         </div>
     );
 }
 
 export function ProjectSubmissionPanel() {
     const [myTeam, setMyTeam] = useState({});
+    const [isSaving, setIsSaving] = useState(false);
     const { register, handleSubmit, reset } = useForm();
 
     useEffect(() => {
@@ -255,34 +327,43 @@ export function ProjectSubmissionPanel() {
     }, [reset]);
 
     const submitUrls = async (data) => {
+        setIsSaving(true);
         try {
             await axiosInstance.put('/api/participant/team/submission', data);
-            alert('URLs successfully submitted!');
+            alert('Submission URLs synchronized successfully.');
         } catch (e) {
-            alert(e.response?.data?.message || 'Error saving URLs. Must include valid https:// links.');
+            alert(e.response?.data?.message || 'Synchronization error. Verify https format.');
+        } finally {
+            setIsSaving(false);
         }
     };
 
-    if (!myTeam.id) return <div className="p-4 text-gray-500 italic bg-white shadow rounded">You are not on a team yet.</div>;
+    if (!myTeam.id) return <div className="card" style={{ padding: '4rem', textAlign: 'center', border: '1px dashed var(--border)', background: 'var(--bg-soft)' }}><p style={{ color: 'var(--text-muted)', fontWeight: 600 }}>No active venture detected. Submission inactive.</p></div>;
 
     return (
-        <div className="p-4 bg-white shadow rounded max-w-2xl">
-            <h2 className="text-xl font-bold mb-4">Project Submission Links</h2>
-            <form onSubmit={handleSubmit(submitUrls)} className="space-y-4">
-                <div>
-                    <label className="block mb-1 font-semibold text-gray-700">GitHub URL</label>
-                    <input type="url" className="border p-2 w-full rounded focus:ring focus:border-indigo-300" placeholder="https://github.com/..." {...register('githubUrl')} />
+        <div style={{ animation: 'fadeIn 0.3s ease-out', maxWidth: '800px' }}>
+            <header style={{ marginBottom: '2.5rem' }}>
+                <h2 style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '0.5rem' }}>Venture Submission</h2>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Finalize your competition trajectory by providing project identifiers.</p>
+            </header>
+
+            <form onSubmit={handleSubmit(submitUrls)} className="card" style={{ padding: '2.5rem' }}>
+                <div style={{ display: 'grid', gap: '2rem' }}>
+                    <div>
+                        <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>Source Ledger (GitHub)</label>
+                        <input type="url" className="input" placeholder="https://github.com/identity/venture-repository" {...register('githubUrl')} />
+                    </div>
+                    <div>
+                        <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>Simulation (Live Demo)</label>
+                        <input type="url" className="input" placeholder="https://simulation.venture.io" {...register('demoUrl')} />
+                    </div>
+                    <div>
+                        <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>Visual Synthesis (Presentation)</label>
+                        <input type="url" className="input" placeholder="https://synthesis.cloud/pitch" {...register('presentationUrl')} />
+                    </div>
                 </div>
-                <div>
-                    <label className="block mb-1 font-semibold text-gray-700">Live Demo URL</label>
-                    <input type="url" className="border p-2 w-full rounded focus:ring focus:border-indigo-300" placeholder="https://..." {...register('demoUrl')} />
-                </div>
-                <div>
-                    <label className="block mb-1 font-semibold text-gray-700">Presentation URL</label>
-                    <input type="url" className="border p-2 w-full rounded focus:ring focus:border-indigo-300" placeholder="https://docs.google.com/..." {...register('presentationUrl')} />
-                </div>
-                <button type="submit" className="bg-indigo-600 text-white px-6 py-2 rounded shadow hover:bg-indigo-700 font-semibold transition mt-2">
-                    Save Links
+                <button type="submit" disabled={isSaving} className="btn btn-primary" style={{ width: '100%', padding: '1rem', marginTop: '2.5rem', fontSize: '0.875rem', letterSpacing: '0.05em' }}>
+                    {isSaving ? 'SYNCHRONIZING...' : 'FINALIZE SUBMISSION'}
                 </button>
             </form>
         </div>
@@ -291,65 +372,104 @@ export function ProjectSubmissionPanel() {
 
 export function MyScoresPanel() {
     const [scores, setScores] = useState([]);
+    const [loading, setLoading] = useState(false);
+
     useEffect(() => {
-        axiosInstance.get('/api/participant/scores').then(r => setScores(r.data)).catch(() => { });
+        setLoading(true);
+        axiosInstance.get('/api/participant/scores')
+            .then(r => setScores(r.data))
+            .catch(() => { })
+            .finally(() => setLoading(false));
     }, []);
 
     return (
-        <div className="p-4 bg-white shadow rounded">
-            <h2 className="text-xl font-bold mb-4">My Team's Evaluations</h2>
-            <table className="min-w-full text-left">
-                <thead>
-                    <tr className="border-b">
-                        <th className="py-2">Criteria ID</th>
-                        <th>Score</th>
-                        <th>Remarks</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {scores.map(s => (
-                        <tr key={s.id} className="border-b">
-                            <td className="py-2">{s.criteriaId}</td>
-                            <td className="font-semibold text-indigo-700">{s.score}</td>
-                            <td className="text-gray-600 italic">{s.remarks}</td>
+        <div style={{ animation: 'fadeIn 0.3s ease-out' }}>
+            <header style={{ marginBottom: '2.5rem' }}>
+                <h2 style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '0.5rem' }}>Evaluation Synthesis</h2>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Review received judicial evaluations for your current venture alliance.</p>
+            </header>
+
+            <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
+                        <tr style={{ background: 'var(--bg-soft)', borderBottom: '1px solid var(--border)' }}>
+                            <th style={{ padding: '1rem 1.5rem', textAlign: 'left', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Metric ID</th>
+                            <th style={{ padding: '1rem 1.5rem', textAlign: 'center', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Precision Score</th>
+                            <th style={{ padding: '1rem 1.5rem', textAlign: 'right', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Judicial Observations</th>
                         </tr>
-                    ))}
-                    {scores.length === 0 && <tr><td colSpan="3" className="py-4 text-center text-gray-500">No scores available yet.</td></tr>}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {loading ? (
+                            <tr><td colSpan="3" style={{ padding: '4rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.875rem' }}>Synchronizing audit...</td></tr>
+                        ) : scores.length === 0 ? (
+                            <tr><td colSpan="3" style={{ padding: '4rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.875rem' }}>No evaluations on record yet.</td></tr>
+                        ) : scores.map(s => (
+                            <tr key={s.id} style={{ borderBottom: '1px solid var(--border)' }}>
+                                <td style={{ padding: '1.25rem 1.5rem' }}>
+                                    <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)' }}>ID {s.criteriaId}</span>
+                                </td>
+                                <td style={{ padding: '1.25rem 1.5rem', textAlign: 'center' }}>
+                                    <span style={{ fontSize: '1.125rem', fontWeight: 800, color: 'var(--accent)' }}>{s.score}</span>
+                                </td>
+                                <td style={{ padding: '1.25rem 1.5rem', textAlign: 'right' }}>
+                                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontStyle: 'italic', maxWidth: '300px', marginLeft: 'auto' }}>{s.remarks || 'No qualitative data.'}</p>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
         </div>
     );
 }
 
 export function ParticipantLeaderboardPanel() {
     const [leaderboard, setLeaderboard] = useState([]);
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        axiosInstance.get('/api/participant/leaderboard').then(r => setLeaderboard(r.data)).catch(() => { });
+        setLoading(true);
+        axiosInstance.get('/api/participant/leaderboard')
+            .then(r => setLeaderboard(r.data))
+            .catch(() => { })
+            .finally(() => setLoading(false));
     }, []);
 
     return (
-        <div className="p-4 bg-white shadow rounded">
-            <h2 className="text-xl font-bold mb-4">Overall Leaderboard</h2>
-            <table className="min-w-full text-left">
-                <thead>
-                    <tr className="border-b bg-gray-50">
-                        <th className="py-3 px-2">Rank</th>
-                        <th className="py-3 px-2">Team</th>
-                        <th className="py-3 px-2 text-right">Weighted Score</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {leaderboard.map((row, index) => (
-                        <tr key={row.teamId} className="border-b">
-                            <td className="py-2 px-2 font-bold text-gray-700">{index + 1}</td>
-                            <td className="py-2 px-2">{row.teamName}</td>
-                            <td className="py-2 px-2 font-bold text-indigo-700 text-right">{row.weightedScore?.toFixed(2)}</td>
+        <div style={{ animation: 'fadeIn 0.3s ease-out' }}>
+            <header style={{ marginBottom: '2.5rem' }}>
+                <h2 style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '0.5rem' }}>Active Standing</h2>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Real-time synthesis of overall rankings within the ecosystem.</p>
+            </header>
+
+            <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
+                        <tr style={{ background: 'var(--bg-soft)', borderBottom: '1px solid var(--border)' }}>
+                            <th style={{ padding: '1rem 1.5rem', textAlign: 'left', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Standing</th>
+                            <th style={{ padding: '1rem 1.5rem', textAlign: 'left', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Venture</th>
+                            <th style={{ padding: '1rem 1.5rem', textAlign: 'right', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Composite Score</th>
                         </tr>
-                    ))}
-                    {leaderboard.length === 0 && <tr><td colSpan="3" className="py-4 text-center text-gray-500">Leaderboard is empty.</td></tr>}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {loading ? (
+                            <tr><td colSpan="3" style={{ padding: '4rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.875rem' }}>Calculating standings...</td></tr>
+                        ) : leaderboard.length === 0 ? (
+                            <tr><td colSpan="3" style={{ padding: '4rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.875rem' }}>No ranking data available.</td></tr>
+                        ) : leaderboard.map((row, index) => (
+                            <tr key={row.teamId} style={{ borderBottom: '1px solid var(--border)' }}>
+                                <td style={{ padding: '1.25rem 1.5rem' }}>
+                                    <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: index === 0 ? 'var(--accent)' : 'var(--bg-soft)', color: index === 0 ? 'white' : 'var(--text)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '0.75rem' }}>{index + 1}</div>
+                                </td>
+                                <td style={{ padding: '1.25rem 1.5rem', fontWeight: 800, fontSize: '1rem', color: index === 0 ? 'var(--accent)' : 'var(--text)' }}>{row.teamName}</td>
+                                <td style={{ padding: '1.25rem 1.5rem', textAlign: 'right' }}>
+                                    <span style={{ fontSize: '1.125rem', fontWeight: 800, color: 'var(--accent)' }}>{row.weightedScore?.toFixed(2)}</span>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
         </div>
     );
 }

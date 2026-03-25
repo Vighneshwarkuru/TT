@@ -2,105 +2,98 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import axiosInstance from '../api/axiosInstance';
 import { useNavigate } from 'react-router-dom';
-import {
-    TeamBrowserPanel,
-    JoinRequestsPanel,
-    TeamProfilePanel,
-    TeamMembersPanel,
-    ProjectSubmissionPanel,
-    MyScoresPanel,
-    ParticipantLeaderboardPanel
-} from '../components/participant/ParticipantPanels';
+import Layout from '../components/Layout';
 
 export default function ParticipantDashboard() {
-    const { user, logout } = useAuth();
+    const { user } = useAuth();
     const navigate = useNavigate();
-    const [myTeam, setMyTeam] = useState(null);
     const [hackathons, setHackathons] = useState([]);
-    const [activeTab, setActiveTab] = useState('Team Browser');
+    const [loading, setLoading] = useState(true);
 
-    // Load team and hackathon info
     useEffect(() => {
-        axiosInstance.get('/api/participant/team')
-            .then(r => setMyTeam(r.data))
-            .catch(() => setMyTeam(null));
-
         axiosInstance.get('/api/public/active-hackathons')
             .then(r => setHackathons(r.data))
-            .catch(() => setHackathons([]));
+            .catch(() => setHackathons([]))
+            .finally(() => setLoading(false));
     }, []);
 
-    const isLead = myTeam && myTeam.createdBy?.id === user?.id;
-
-    // We'll keep the top-level dashboard simple: just Hackathon Cards.
-    // The specific team management will happen INSIDE the hackathon page (or we can keep it here if preferred).
-    // User said: "the entire ui should revolve around the names of the hackathons so for each hackathon there should be a new page"
-    
     return (
-        <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-indigo-500/30">
-            <header className="bg-slate-900/50 backdrop-blur-md border-b border-white/5 py-4 px-6 flex justify-between items-center sticky top-0 z-50">
-                <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-600/20 font-bold text-xl">V</div>
-                    <h1 className="text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">VerdictSphere</h1>
+        <Layout>
+            <div className="container">
+                <header style={{ marginBottom: '3rem' }}>
+                    <h2 style={{ fontSize: '2.25rem', fontWeight: 800, marginBottom: '0.5rem', letterSpacing: '-0.025em' }}>
+                        Welcome back, <span style={{ color: 'var(--accent)' }}>{user?.firstName || 'Participant'}</span>
+                    </h2>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '1.125rem', maxWidth: '600px' }}>
+                        Join new challenges or continue your innovation journey. Your next great idea starts here.
+                    </p>
+                </header>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '1.5rem', borderBottom: '1px solid var(--border)', paddingBottom: '0.75rem' }}>
+                    <h3 style={{ fontSize: '1.125rem', fontWeight: 600 }}>Available Hackathons</h3>
+                    <span className="badge">{hackathons.length} Active</span>
                 </div>
-                <div className="flex items-center space-x-6">
-                    <div className="hidden md:block text-right">
-                        <p className="text-sm font-bold text-white leading-none mb-1">{user?.email}</p>
-                        <p className="text-xs font-medium text-slate-500 uppercase tracking-widest">{user?.role}</p>
+
+                {loading ? (
+                    <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--text-muted)' }}>
+                        <p>Looking for hackathons...</p>
                     </div>
-                    <button onClick={logout} className="bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-lg text-sm font-bold transition border border-white/10 hover:border-white/20">
-                        Logout
-                    </button>
-                </div>
-            </header>
-
-            <main className="max-w-7xl mx-auto p-6 md:p-12">
-                <div className="mb-12">
-                    <h2 className="text-4xl md:text-5xl font-black mb-4 tracking-tight">Active Hackathons</h2>
-                    <p className="text-slate-400 text-lg max-w-2xl">Discover and register for the latest innovation challenges. Your journey to excellence starts here.</p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {hackathons.map(h => (
-                        <div 
-                            key={h.id}
-                            onClick={() => navigate(`/hackathon/${h.id}`)}
-                            className="group relative bg-slate-900 rounded-[2rem] p-8 border border-white/5 hover:border-indigo-500/50 transition-all duration-500 cursor-pointer hover:-translate-y-2 hover:shadow-2xl hover:shadow-indigo-500/10"
-                        >
-                            <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-[2rem]"></div>
-                            
-                            <div className="relative z-10">
-                                <div className="w-14 h-14 bg-slate-800 rounded-2xl flex items-center justify-center mb-6 border border-white/5 group-hover:scale-110 group-hover:bg-indigo-600 transition-all duration-500">
-                                    <span className="text-2xl group-hover:rotate-12 transition-transform">🚀</span>
+                ) : hackathons.length > 0 ? (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.5rem' }}>
+                        {hackathons.map(h => (
+                            <div 
+                                key={h.id}
+                                onClick={() => navigate(`/hackathon/${h.id}`)}
+                                className="card"
+                                style={{ 
+                                    cursor: 'pointer', 
+                                    transition: 'transform 0.2s, border-color 0.2s', 
+                                    display: 'flex', 
+                                    flexDirection: 'column',
+                                    height: '100%'
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.borderColor = 'var(--text-muted)';
+                                    e.currentTarget.style.transform = 'translateY(-2px)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.borderColor = 'var(--border)';
+                                    e.currentTarget.style.transform = 'none';
+                                }}
+                            >
+                                <div style={{ marginBottom: '1.5rem' }}>
+                                    <h4 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.75rem' }}>{h.name}</h4>
+                                    <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden', minHeight: '4.5em' }}>
+                                        {h.description || "No description provided."}
+                                    </p>
                                 </div>
                                 
-                                <h3 className="text-2xl font-bold mb-3 group-hover:text-indigo-400 transition-colors">{h.name}</h3>
-                                <p className="text-slate-400 text-sm leading-relaxed mb-6 line-clamp-2">
-                                    {h.description || "No description provided."}
-                                </p>
-                                
-                                <div className="space-y-3 pt-6 border-t border-white/5">
-                                    <div className="flex items-center text-xs font-bold text-slate-500 uppercase tracking-widest">
-                                        <span className="mr-2">📅</span> Deadline: {h.registrationDeadline}
+                                <div style={{ marginTop: 'auto', borderTop: '1px solid var(--bg-soft)', paddingTop: '1.25rem' }}>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                                            <span>Registration Deadline</span>
+                                            <span style={{ fontWeight: 600, color: 'var(--text-main)' }}>{h.registrationDeadline}</span>
+                                        </div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                                            <span>Event Starts</span>
+                                            <span style={{ fontWeight: 600, color: 'var(--accent)' }}>{h.startDate}</span>
+                                        </div>
                                     </div>
-                                    <div className="flex items-center text-xs font-bold text-slate-500 uppercase tracking-widest">
-                                        <span className="mr-2">🏁</span> Starts: {h.startDate}
+                                    
+                                    <div style={{ marginTop: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8125rem', fontWeight: 700, color: 'var(--accent)' }}>
+                                        Register Now &rarr;
                                     </div>
-                                </div>
-
-                                <div className="mt-8 flex items-center text-sm font-bold text-indigo-400 group-hover:translate-x-2 transition-transform duration-300">
-                                    Explore & Register <span className="ml-2">→</span>
                                 </div>
                             </div>
-                        </div>
-                    ))}
-                    {hackathons.length === 0 && (
-                        <div className="col-span-full py-20 text-center bg-slate-900/50 rounded-[2.5rem] border border-dashed border-white/10">
-                            <p className="text-slate-500 text-xl font-medium">No active hackathons found at the moment.</p>
-                        </div>
-                    )}
-                </div>
-            </main>
-        </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="card" style={{ textAlign: 'center', padding: '5rem 2rem', borderStyle: 'dashed', background: 'transparent' }}>
+                        <p style={{ color: 'var(--text-muted)', fontSize: '1.125rem' }}>No active hackathons found at the moment.</p>
+                        <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginTop: '0.5rem' }}>Please check back later for new opportunities.</p>
+                    </div>
+                )}
+            </div>
+        </Layout>
     );
 }

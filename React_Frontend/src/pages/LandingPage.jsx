@@ -2,78 +2,103 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
 
-const styles = {
-  container: { fontFamily: 'sans-serif', maxWidth: 900, margin: '0 auto', padding: 24 },
-  hero: { textAlign: 'center', padding: '48px 0 32px' },
-  heroTitle: { fontSize: 48, fontWeight: 700, color: '#1976d2', margin: 0 },
-  heroSub: { fontSize: 18, color: '#555', marginTop: 12 },
-  nav: { display: 'flex', gap: 16, justifyContent: 'center', marginTop: 24 },
-  btn: { padding: '10px 24px', borderRadius: 6, textDecoration: 'none', fontWeight: 600, fontSize: 15 },
-  btnPrimary: { background: '#1976d2', color: '#fff', border: 'none' },
-  btnOutline: { background: '#fff', color: '#1976d2', border: '2px solid #1976d2' },
-  section: { marginTop: 48 },
-  sectionTitle: { fontSize: 24, fontWeight: 600, color: '#333', marginBottom: 16 },
-  grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16 },
-  card: { border: '1px solid #e0e0e0', borderRadius: 8, padding: 20, background: '#fff', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' },
-  cardTitle: { fontSize: 18, fontWeight: 600, color: '#1976d2', marginBottom: 8 },
-  cardDate: { fontSize: 13, color: '#777' },
-  empty: { color: '#999', fontStyle: 'italic' },
-};
-
 export default function LandingPage() {
-  const [hackathons, setHackathons] = useState([]);
-  const [loading, setLoading] = useState(true);
+    const [hackathons, setHackathons] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    axiosInstance.get('/api/public/active-hackathons')
-      .then(res => {
-        if (Array.isArray(res.data)) {
-          setHackathons(res.data);
-        } else {
-          console.error('Expected array for hackathons, got:', res.data);
-          setHackathons([]);
-        }
-      })
-      .catch((err) => {
-        console.error('Failed to fetch hackathons:', err);
-        setHackathons([]);
-      })
-      .finally(() => setLoading(false));
-  }, []);
+    useEffect(() => {
+        axiosInstance.get('/api/public/active-hackathons')
+            .then(res => {
+                if (Array.isArray(res.data)) {
+                    setHackathons(res.data);
+                } else {
+                    setHackathons([]);
+                }
+            })
+            .catch(() => setHackathons([]))
+            .finally(() => setLoading(false));
+    }, []);
 
-  return (
-    <div style={styles.container}>
-      <div style={styles.hero}>
-        <h1 style={styles.heroTitle}>VerdictSphere</h1>
-        <p style={styles.heroSub}>The hackathon evaluation platform for teams, judges, and organizers.</p>
-        <div style={styles.nav}>
-          <Link to="/login" style={{ ...styles.btn, ...styles.btnPrimary }}>Login</Link>
-          <Link to="/register" style={{ ...styles.btn, ...styles.btnOutline }}>Register</Link>
+    return (
+        <div style={{ minHeight: '100vh', background: 'radial-gradient(circle at top right, var(--bg-soft), white)', paddingBottom: '6rem' }}>
+            <div className="container">
+                <header style={{ padding: '120px 0 100px', textAlign: 'center', animation: 'fadeIn 0.8s ease-out' }}>
+                    <div className="badge" style={{ marginBottom: '1.5rem', padding: '0.5rem 1.25rem', letterSpacing: '0.1em', fontWeight: 800 }}>VERSION 4.0 RELEASED</div>
+                    <h1 style={{ fontSize: '4.5rem', fontWeight: 800, letterSpacing: '-0.05em', marginBottom: '1.5rem', lineHeight: 1 }}>
+                        Verdict<span style={{ color: 'var(--accent)' }}>Sphere</span>
+                    </h1>
+                    <p style={{ fontSize: '1.5rem', color: 'var(--text-muted)', maxWidth: '700px', margin: '0 auto 3.5rem', fontWeight: 500, lineHeight: 1.5 }}>
+                        The definitive evaluation ecosystem for high-stakes competition. Precision-engineered for clarity.
+                    </p>
+                    <div style={{ display: 'flex', gap: '1.5rem', justifyContent: 'center' }}>
+                        <Link to="/login" className="btn btn-primary" style={{ padding: '1.25rem 3rem', fontSize: '1rem', letterSpacing: '0.05em' }}>INITIALIZE SESSION</Link>
+                        <Link to="/register" className="btn" style={{ padding: '1.25rem 3rem', fontSize: '1rem', letterSpacing: '0.05em', border: '1px solid var(--border)', background: 'white' }}>ESTABLISH IDENTITY</Link>
+                    </div>
+                </header>
+
+                <section style={{ animation: 'fadeIn 1s ease-out 0.2s both' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3rem', borderBottom: '1px solid var(--border)', paddingBottom: '1.5rem' }}>
+                        <h2 style={{ fontSize: '1.75rem', fontWeight: 800, letterSpacing: '-0.02em' }}>Active Pipelines</h2>
+                        <span className="badge" style={{ fontSize: '0.75rem' }}>{hackathons.length} COMPETITIONS ONLINE</span>
+                    </div>
+
+                    {loading ? (
+                        <div style={{ textAlign: 'center', padding: '6rem', color: 'var(--text-muted)' }}>
+                            <p style={{ fontWeight: 600, letterSpacing: '0.05em' }}>SYNCHRONIZING GLOBAL REGISTRY...</p>
+                        </div>
+                    ) : Array.isArray(hackathons) && hackathons.length > 0 ? (
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '2rem' }}>
+                            {hackathons.map(h => (
+                                <div key={h.id} className="card" style={{ 
+                                    display: 'flex', 
+                                    flexDirection: 'column', 
+                                    height: '100%', 
+                                    padding: '2.5rem',
+                                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                    cursor: 'default',
+                                    background: 'white'
+                                }}
+                                onMouseEnter={e => {
+                                    e.currentTarget.style.transform = 'translateY(-8px)';
+                                    e.currentTarget.style.boxShadow = '0 20px 40px rgba(0,0,0,0.05)';
+                                    e.currentTarget.style.borderColor = 'var(--accent)';
+                                }}
+                                onMouseLeave={e => {
+                                    e.currentTarget.style.transform = 'none';
+                                    e.currentTarget.style.boxShadow = 'none';
+                                    e.currentTarget.style.borderColor = 'var(--border)';
+                                }}>
+                                    <div style={{ marginBottom: '2rem' }}>
+                                        <h3 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '0.75rem', color: 'var(--text-main)' }}>{h.name}</h3>
+                                        <p style={{ fontSize: '0.9375rem', color: 'var(--text-muted)', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden', lineHeight: 1.6 }}>
+                                            {h.description || "Project management and high-stakes evaluation workspace."}
+                                        </p>
+                                    </div>
+                                    <div style={{ marginTop: 'auto', borderTop: '1px solid var(--bg-soft)', paddingTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                                        <div style={{ fontSize: '0.625rem', fontWeight: 800, color: 'var(--text-muted)', display: 'flex', justifyContent: 'space-between', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                            <span>Start Protocol</span>
+                                            <span style={{ color: 'var(--text-main)' }}>{h.startDate}</span>
+                                        </div>
+                                        <div style={{ fontSize: '0.625rem', fontWeight: 800, color: 'var(--text-muted)', display: 'flex', justifyContent: 'space-between', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                            <span>End Protocol</span>
+                                            <span style={{ color: 'var(--accent)' }}>{h.endDate}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="card" style={{ textAlign: 'center', padding: '6rem 2rem', borderStyle: 'dashed', background: 'transparent' }}>
+                            <p style={{ color: 'var(--text-muted)', fontSize: '1.125rem', fontWeight: 600 }}>NO ACTIVE COMPETITIONS DETECTED</p>
+                            <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginTop: '0.5rem' }}>The ecosystem is currently in a quiet state.</p>
+                        </div>
+                    )}
+                </section>
+            </div>
+            
+            <footer style={{ marginTop: '8rem', textAlign: 'center', borderTop: '1px solid var(--border)', paddingTop: '4rem' }}>
+                <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 700, letterSpacing: '0.1em' }}>&copy; 2026 VERDICTSPHERE. FORGED FOR INNOVATION.</p>
+            </footer>
         </div>
-      </div>
-
-      <div style={styles.section}>
-        <h2 style={styles.sectionTitle}>Active Hackathons</h2>
-        {loading ? (
-          <p>Loading...</p>
-        ) : Array.isArray(hackathons) && hackathons.length > 0 ? (
-          <div style={styles.grid}>
-            {hackathons.map(h => (
-              <div key={h.id} style={styles.card}>
-                <div style={styles.cardTitle}>{h.name}</div>
-                {h.description && <p style={{ fontSize: 14, color: '#555', margin: '4px 0 8px' }}>{h.description}</p>}
-                <div style={styles.cardDate}>Start: {h.startDate}</div>
-                <div style={styles.cardDate}>End: {h.endDate}</div>
-                {h.registrationDeadline && (
-                  <div style={styles.cardDate}>Registration deadline: {h.registrationDeadline}</div>
-                )}
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p style={styles.empty}>No active hackathons at the moment.</p>
-        )}
-      </div>
-    </div>
-  );
+    );
 }

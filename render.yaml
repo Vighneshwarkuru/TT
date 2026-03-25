@@ -1,19 +1,17 @@
 services:
-  # Backend Web Service (Spring Boot)
+  # Backend Web Service (Spring Boot - Docker)
   - type: web
     name: verdictsphere-backend
-    runtime: java
+    runtime: docker
     plan: free
     rootDir: Springboot_Backend
-    buildCommand: ./mvnw clean install -DskipTests
-    startCommand: java -jar target/verdictsphere-0.0.1-SNAPSHOT.jar
     envVars:
       - key: SPRING_DATASOURCE_URL
-        placeholder: "jdbc:postgresql://<host>:<port>/postgres"
+        value: "jdbc:postgresql://<host>:<port>/postgres"
       - key: SPRING_DATASOURCE_USERNAME
-        placeholder: "postgres"
+        value: "postgres"
       - key: SPRING_DATASOURCE_PASSWORD
-        placeholder: "your-supabase-password"
+        value: "password"
       - key: JWT_SECRET
         generateValue: true
 

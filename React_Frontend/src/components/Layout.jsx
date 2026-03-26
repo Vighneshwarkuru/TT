@@ -46,7 +46,7 @@ export default function Layout({ children }) {
 
       <footer style={{ padding: '2rem 0', borderTop: '1px solid var(--border)', background: 'white', marginTop: 'auto' }}>
         <div className="container" style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.8125rem' }}>
-          &copy; {new Date().getFullYear()} VerdictSphere. Built for excellence.
+          &copy; {new Date().getFullYear()} VerdictSphere. The hackathon evaluation platform.
         </div>
       </footer>
     </div>

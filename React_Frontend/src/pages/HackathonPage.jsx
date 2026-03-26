@@ -151,7 +151,7 @@ export default function HackathonPage() {
     if (loading) return (
         <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-soft)' }}>
             <div style={{ padding: '2rem', textAlign: 'center' }}>
-                <p style={{ color: 'var(--text-muted)' }}>Synching Workspace...</p>
+                <p style={{ color: 'var(--text-muted)' }}>Loading...</p>
             </div>
         </div>
     );
@@ -198,7 +198,7 @@ export default function HackathonPage() {
                         <section style={{ marginBottom: '4rem' }}>
                             <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '1.5rem', display: 'flex', alignItems: 'center' }}>
                                 <span style={{ width: '4px', height: '24px', background: 'var(--accent)', borderRadius: '2px', marginRight: '1rem' }}></span>
-                                Rules & Requirements
+                                Rules
                             </h2>
                             <div className="card" style={{ padding: '2rem', background: 'var(--bg-soft)' }}>
                                 <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'grid', gap: '1rem' }}>
@@ -326,7 +326,7 @@ export default function HackathonPage() {
                         {user?.role === 'ADMIN' && (
                              <div className="card" style={{ padding: '1.5rem' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                                    <h2 style={{ fontSize: '1.125rem', fontWeight: 700 }}>Governance</h2>
+                                    <h2 style={{ fontSize: '1.125rem', fontWeight: 700 }}>Manage Judges & Teams</h2>
                                     <button 
                                         onClick={() => setShowJudgeManager(!showJudgeManager)}
                                         style={{ background: 'var(--bg-soft)', border: '1px solid var(--border)', padding: '0.25rem 0.75rem', borderRadius: '4px', fontSize: '0.625rem', fontWeight: 700, cursor: 'pointer' }}

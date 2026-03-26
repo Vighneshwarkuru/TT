@@ -116,3 +116,15 @@ button {
   color: var(--text-muted);
   border: 1px solid var(--border);
 }
+
+.grid-responsive {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.25rem;
+}
+
+@media (max-width: 640px) {
+  .mobile-stack {
+    flex-direction: column !important;
+  }
+}

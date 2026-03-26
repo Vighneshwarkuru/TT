@@ -12,7 +12,7 @@ export default function JudgeManagementPanel() {
   const load = () => {
     axiosInstance.get('/api/admin/judges')
       .then(r => setJudges(r.data))
-      .catch(() => setError('Failed to synchronize judge records.'));
+      .catch(() => setError('Failed to load judge data.'));
   };
 
   useEffect(() => { load(); }, []);
@@ -28,14 +28,14 @@ export default function JudgeManagementPanel() {
       setForm(emptyForm);
       load();
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to create judge instance.');
+      setError(err.response?.data?.message || 'Failed to create judge account.');
     } finally {
       setSubmitting(false);
     }
   };
 
   const handleDelete = async id => {
-    if (!window.confirm('Are you sure you want to decommission this judge access?')) return;
+    if (!window.confirm('Are you sure you want to delete this judge account?')) return;
     try {
       await axiosInstance.delete(`/api/admin/judges/${id}`);
       load();
@@ -47,15 +47,15 @@ export default function JudgeManagementPanel() {
   return (
     <div style={{ animation: 'fadeIn 0.4s ease-out' }}>
       <header style={{ marginBottom: '3rem' }}>
-        <h2 style={{ fontSize: '1.75rem', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: '0.5rem' }}>Judge Authority</h2>
-        <p style={{ color: 'var(--text-muted)', fontSize: '0.9375rem', maxWidth: '600px' }}>Provision and manage judicial accounts for official evaluation cycles and leaderboard verification.</p>
+        <h2 style={{ fontSize: '1.75rem', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: '0.5rem' }}>Manage Judges</h2>
+        <p style={{ color: 'var(--text-muted)', fontSize: '0.9375rem', maxWidth: '600px' }}>Create and manage judge accounts for evaluations.</p>
       </header>
 
       <div style={{ display: 'grid', gridTemplateColumns: '400px 1fr', gap: '4rem', alignItems: 'start' }}>
         <div className="card" style={{ padding: '2.5rem' }}>
           <header style={{ marginBottom: '2rem' }}>
-            <h3 style={{ fontSize: '1.125rem', fontWeight: 800 }}>Provision Authority</h3>
-            <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>Establish a new judicial identity.</p>
+            <h3 style={{ fontSize: '1.125rem', fontWeight: 800 }}>Create Judge</h3>
+            <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>Create a new judge account.</p>
           </header>
 
           {error && (
@@ -67,24 +67,24 @@ export default function JudgeManagementPanel() {
           <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '1.75rem' }}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.625rem', letterSpacing: '0.05em' }}>Forename</label>
+                <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.625rem', letterSpacing: '0.05em' }}>First Name</label>
                 <input className="input" name="firstName" value={form.firstName} onChange={handleChange} required placeholder="John" />
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.625rem', letterSpacing: '0.05em' }}>Surname</label>
+                <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.625rem', letterSpacing: '0.05em' }}>Last Name</label>
                 <input className="input" name="lastName" value={form.lastName} onChange={handleChange} required placeholder="Doe" />
               </div>
             </div>
             <div>
-              <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.625rem', letterSpacing: '0.05em' }}>Identity (Email)</label>
-              <input className="input" type="email" name="email" value={form.email} onChange={handleChange} required placeholder="judge@verdictsphere.ai" />
+              <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.625rem', letterSpacing: '0.05em' }}>Email</label>
+              <input className="input" type="email" name="email" value={form.email} onChange={handleChange} required placeholder="email@example.com" />
             </div>
             <div>
-              <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.625rem', letterSpacing: '0.05em' }}>Authorization (Key)</label>
+              <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.625rem', letterSpacing: '0.05em' }}>Password</label>
               <input className="input" type="password" name="password" value={form.password} onChange={handleChange} required placeholder="••••••••" />
             </div>
             <button className="btn btn-primary" type="submit" disabled={submitting} style={{ width: '100%', padding: '1rem', marginTop: '0.5rem', fontWeight: 800, letterSpacing: '0.05em' }}>
-              {submitting ? 'PROVISIONING...' : 'ESTABLISH AUTHORITY'}
+              {submitting ? 'CREATING...' : 'CREATE JUDGE'}
             </button>
           </form>
         </div>
@@ -93,15 +93,15 @@ export default function JudgeManagementPanel() {
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ background: 'var(--bg-soft)', borderBottom: '1px solid var(--border)' }}>
-                <th style={{ padding: '1.25rem 2rem', textAlign: 'left', fontSize: '0.625rem', fontWeight: 900, textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '0.05em' }}>Authority Node</th>
-                <th style={{ padding: '1.25rem 2rem', textAlign: 'left', fontSize: '0.625rem', fontWeight: 900, textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '0.05em' }}>Identity Endpoint</th>
-                <th style={{ padding: '1.25rem 2rem', textAlign: 'right', fontSize: '0.625rem', fontWeight: 900, textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '0.05em' }}>Operations</th>
+                <th style={{ padding: '1.25rem 2rem', textAlign: 'left', fontSize: '0.625rem', fontWeight: 900, textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '0.05em' }}>Judge Name</th>
+                <th style={{ padding: '1.25rem 2rem', textAlign: 'left', fontSize: '0.625rem', fontWeight: 900, textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '0.05em' }}>Email</th>
+                <th style={{ padding: '1.25rem 2rem', textAlign: 'right', fontSize: '0.625rem', fontWeight: 900, textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '0.05em' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
               {judges.length === 0 ? (
                 <tr>
-                  <td colSpan="3" style={{ padding: '4rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.875rem', fontWeight: 500 }}>No judicial authorities synchronized.</td>
+                  <td colSpan="3" style={{ padding: '4rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.875rem', fontWeight: 500 }}>No judges found.</td>
                 </tr>
               ) : judges.map(j => (
                 <tr key={j.id} style={{ borderBottom: '1px solid var(--border)', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-soft)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
@@ -121,7 +121,7 @@ export default function JudgeManagementPanel() {
                       onClick={() => handleDelete(j.id)} 
                       style={{ background: 'none', border: 'none', color: 'var(--error)', fontSize: '0.6875rem', fontWeight: 800, cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                     >
-                      Decommission
+                      Delete
                     </button>
                   </td>
                 </tr>

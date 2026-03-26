@@ -35,23 +35,23 @@ export function JudgeTeamAcceptancePanel() {
     return (
         <div style={{ animation: 'fadeIn 0.3s ease-out' }}>
             <header style={{ marginBottom: '2rem' }}>
-                <h2 style={{ fontSize: '1.25rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '0.5rem' }}>Team Intake</h2>
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Review and acknowledge team assignments for the current evaluation cycle.</p>
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '0.5rem' }}>Pending Teams</h2>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Review and accept teams assigned to you for evaluation.</p>
             </header>
 
             <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead>
                         <tr style={{ background: 'var(--bg-soft)', borderBottom: '1px solid var(--border)' }}>
-                            <th style={{ padding: '1rem 1.5rem', textAlign: 'left', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Nominee</th>
-                            <th style={{ padding: '1rem 1.5rem', textAlign: 'left', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Competition</th>
+                            <th style={{ padding: '1rem 1.5rem', textAlign: 'left', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Team Name</th>
+                            <th style={{ padding: '1rem 1.5rem', textAlign: 'left', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Hackathon</th>
                             <th style={{ padding: '1rem 1.5rem', textAlign: 'center', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Status</th>
-                            <th style={{ padding: '1rem 1.5rem', textAlign: 'right', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Operations</th>
+                            <th style={{ padding: '1rem 1.5rem', textAlign: 'right', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {loading ? (
-                            <tr><td colSpan="4" style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.875rem' }}>Synchronizing assignments...</td></tr>
+                            <tr><td colSpan="4" style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.875rem' }}>Loading teams...</td></tr>
                         ) : teams.length === 0 ? (
                             <tr><td colSpan="4" style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.875rem' }}>No pending team assignments.</td></tr>
                         ) : teams.map(t => (
@@ -76,7 +76,7 @@ export function JudgeTeamAcceptancePanel() {
                                             <button onClick={() => reject(t.id)} className="btn" style={{ padding: '0.4rem 1rem', fontSize: '0.625rem', borderRadius: '4px', background: 'none', border: '1px solid var(--border)' }}>REJECT</button>
                                         </div>
                                     ) : (
-                                        <span style={{ fontSize: '0.625rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Acknowledged</span>
+                                        <span style={{ fontSize: '0.625rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Accepted</span>
                                     )}
                                 </td>
                             </tr>
@@ -103,16 +103,16 @@ export function AssignedTeamsPanel() {
     return (
         <div style={{ animation: 'fadeIn 0.3s ease-out' }}>
             <header style={{ marginBottom: '2rem' }}>
-                <h2 style={{ fontSize: '1.25rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '0.5rem' }}>Evaluation Portfolio</h2>
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Registry of all teams currently under your judicial oversight.</p>
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '0.5rem' }}>Assigned Teams</h2>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Registry of all teams currently assigned to you for evaluation.</p>
             </header>
 
             <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead>
                         <tr style={{ background: 'var(--bg-soft)', borderBottom: '1px solid var(--border)' }}>
-                            <th style={{ padding: '1rem 1.5rem', textAlign: 'left', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Competition Reference</th>
-                            <th style={{ padding: '1rem 1.5rem', textAlign: 'right', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Nominee Identity</th>
+                            <th style={{ padding: '1rem 1.5rem', textAlign: 'left', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Hackathon</th>
+                            <th style={{ padding: '1rem 1.5rem', textAlign: 'right', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Team Name</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -160,7 +160,7 @@ export function EvaluationFormPanel() {
     const filteredTeams = assignments.filter(a => a.hackathonId === Number(selectedHackathon));
 
     const onSubmit = async (data) => {
-        if (!selectedTeam) { alert("Please select a target nominee."); return; }
+        if (!selectedTeam) { alert("Please select a team."); return; }
         setIsSubmitting(true);
         try {
             const promises = criteria.map(c => {
@@ -173,11 +173,11 @@ export function EvaluationFormPanel() {
                 return axiosInstance.post('/api/judge/evaluations', payload);
             });
             await Promise.all(promises);
-            alert('Evaluation synchronized successfully.');
+            alert('Evaluation submitted successfully.');
             reset();
             setSelectedTeam('');
         } catch (e) {
-            alert('Synchronization failed. Verify nominee acceptance status or duplicate submission.');
+            alert('Submission failed. Verify team status or duplicate submission.');
         } finally {
             setIsSubmitting(false);
         }
@@ -186,24 +186,24 @@ export function EvaluationFormPanel() {
     return (
         <div style={{ animation: 'fadeIn 0.3s ease-out' }}>
             <header style={{ marginBottom: '2rem' }}>
-                <h2 style={{ fontSize: '1.25rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '0.5rem' }}>Judicial Review</h2>
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Submit quantitative scores and qualitative feedback based on set criteria.</p>
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '0.5rem' }}>Evaluate Team</h2>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Submit scores and feedback for the selected team.</p>
             </header>
 
             <div className="card" style={{ padding: '1.5rem', marginBottom: '2.5rem', background: 'var(--bg-soft)', border: 'none' }}>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
                     <div>
-                        <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>Competition</label>
+                        <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>Hackathon</label>
                         <select className="input" style={{ background: 'white' }} value={selectedHackathon} onChange={e => { setSelectedHackathon(e.target.value); setSelectedTeam(''); }}>
-                            <option value="">Select competition...</option>
+                            <option value="">Select hackathon...</option>
                             {hackathons.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
                         </select>
                     </div>
                     {selectedHackathon && (
                         <div>
-                            <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>Target Nominee</label>
+                            <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>Select Team</label>
                             <select className="input" style={{ background: 'white' }} value={selectedTeam} onChange={e => setSelectedTeam(e.target.value)}>
-                                <option value="">Select nominee...</option>
+                                <option value="">Select team...</option>
                                 {filteredTeams.map(t => <option key={t.id} value={t.id}>{t.teamName}</option>)}
                             </select>
                         </div>
@@ -222,7 +222,7 @@ export function EvaluationFormPanel() {
                                         <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: 1.4, maxWidth: '500px' }}>{c.description}</p>
                                     </div>
                                     <div style={{ textAlign: 'right' }}>
-                                        <span className="badge" style={{ fontSize: '0.625rem' }}>Max: {c.maxScore}</span>
+                                        <span className="badge" style={{ fontSize: '0.625rem' }}>Max Score: {c.maxScore}</span>
                                         <div style={{ fontSize: '0.625rem', fontWeight: 700, color: 'var(--text-muted)', marginTop: '0.25rem', textTransform: 'uppercase' }}>Weight: {c.weight}%</div>
                                     </div>
                                 </div>
@@ -240,21 +240,21 @@ export function EvaluationFormPanel() {
                                         />
                                     </div>
                                     <div>
-                                        <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Observations</label>
-                                        <textarea className="input" style={{ minHeight: '44px' }} placeholder="Provide justification for this score..." {...register(`remarks_${c.id}`)}></textarea>
+                                        <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Comments</label>
+                                        <textarea className="input" style={{ minHeight: '44px' }} placeholder="Add comments for this score..." {...register(`remarks_${c.id}`)}></textarea>
                                     </div>
                                 </div>
-                                {errors[`score_${c.id}`] && <p style={{ color: 'var(--error)', fontSize: '0.625rem', fontWeight: 700, marginTop: '0.5rem', textTransform: 'uppercase' }}>Precision Error: Score must be between 0 and {c.maxScore}.</p>}
+                                {errors[`score_${c.id}`] && <p style={{ color: 'var(--error)', fontSize: '0.625rem', fontWeight: 700, marginTop: '0.5rem', textTransform: 'uppercase' }}>Error: Score must be between 0 and {c.maxScore}.</p>}
                             </div>
                         ))}
                     </div>
                     <button type="submit" className="btn btn-primary" disabled={isSubmitting} style={{ width: '100%', padding: '1rem', fontSize: '0.875rem', letterSpacing: '0.05em' }}>
-                        {isSubmitting ? 'SYNCHRONIZING...' : 'FINALIZE EVALUATION'}
+                        {isSubmitting ? 'SAVING...' : 'SUBMIT EVALUATION'}
                     </button>
                 </form>
             ) : selectedTeam ? (
                 <div className="card" style={{ padding: '4rem', textAlign: 'center', background: 'var(--bg-soft)', border: '1px dashed var(--border)' }}>
-                    <p style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Framework mismatch: No criteria defined for this competition.</p>
+                    <p style={{ color: 'var(--text-muted)', fontWeight: 600 }}>No criteria found for this hackathon.</p>
                 </div>
             ) : null}
         </div>
@@ -276,23 +276,23 @@ export function MyEvaluationsPanel() {
     return (
         <div style={{ animation: 'fadeIn 0.3s ease-out' }}>
             <header style={{ marginBottom: '2rem' }}>
-                <h2 style={{ fontSize: '1.25rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '0.5rem' }}>Submission History</h2>
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Log of all successfully synchronized evaluations submitted to the ledger.</p>
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '0.5rem' }}>My Evaluations</h2>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>List of evaluations you have submitted.</p>
             </header>
 
             <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead>
                         <tr style={{ background: 'var(--bg-soft)', borderBottom: '1px solid var(--border)' }}>
-                            <th style={{ padding: '1rem 1.5rem', textAlign: 'left', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Nominee</th>
-                            <th style={{ padding: '1rem 1.5rem', textAlign: 'left', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Metric ID</th>
-                            <th style={{ padding: '1rem 1.5rem', textAlign: 'center', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Precision Score</th>
-                            <th style={{ padding: '1rem 1.5rem', textAlign: 'right', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Observations</th>
+                            <th style={{ padding: '1rem 1.5rem', textAlign: 'left', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Team Name</th>
+                            <th style={{ padding: '1rem 1.5rem', textAlign: 'left', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Criteria</th>
+                            <th style={{ padding: '1rem 1.5rem', textAlign: 'center', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Score</th>
+                            <th style={{ padding: '1rem 1.5rem', textAlign: 'right', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Comments</th>
                         </tr>
                     </thead>
                     <tbody>
                         {loading ? (
-                            <tr><td colSpan="4" style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.875rem' }}>Synchronizing audit...</td></tr>
+                            <tr><td colSpan="4" style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.875rem' }}>Loading evaluations...</td></tr>
                         ) : evals.length === 0 ? (
                             <tr><td colSpan="4" style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.875rem' }}>No submissions on record.</td></tr>
                         ) : evals.map(e => (
@@ -339,14 +339,14 @@ export function JudgeLeaderboardPanel() {
     return (
         <div style={{ animation: 'fadeIn 0.3s ease-out' }}>
             <header style={{ marginBottom: '2rem' }}>
-                <h2 style={{ fontSize: '1.25rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '0.5rem' }}>Live Rankings</h2>
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Real-time synthesis of all evaluations mapped to current standing.</p>
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '0.5rem' }}>Leaderboard</h2>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Current standings for the selected hackathon.</p>
             </header>
 
             <div className="card" style={{ padding: '1.5rem', marginBottom: '2.5rem', background: 'var(--bg-soft)', border: 'none' }}>
-                <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>Inquiry Context</label>
+                <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>Select Hackathon</label>
                 <select className="input" style={{ background: 'white', maxWidth: '400px' }} value={selectedHackathon} onChange={e => setSelectedHackathon(e.target.value)}>
-                    <option value="">Select competition...</option>
+                    <option value="">Select hackathon...</option>
                     {hackathons.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
                 </select>
             </div>
@@ -356,14 +356,14 @@ export function JudgeLeaderboardPanel() {
                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                         <thead>
                             <tr style={{ background: 'var(--bg-soft)', borderBottom: '1px solid var(--border)' }}>
-                                <th style={{ padding: '1rem 1.5rem', textAlign: 'left', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Standing</th>
-                                <th style={{ padding: '1rem 1.5rem', textAlign: 'left', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Nominee</th>
-                                <th style={{ padding: '1rem 1.5rem', textAlign: 'right', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Composite Score</th>
+                                <th style={{ padding: '1rem 1.5rem', textAlign: 'left', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Rank</th>
+                                <th style={{ padding: '1rem 1.5rem', textAlign: 'left', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Team Name</th>
+                                <th style={{ padding: '1rem 1.5rem', textAlign: 'right', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Total Score</th>
                             </tr>
                         </thead>
                         <tbody>
                             {loading ? (
-                                <tr><td colSpan="3" style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.875rem' }}>Calculating standings...</td></tr>
+                                <tr><td colSpan="3" style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.875rem' }}>Loading leaderboard...</td></tr>
                             ) : leaderboard.length === 0 ? (
                                 <tr><td colSpan="3" style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.875rem' }}>Insufficient data for ranking.</td></tr>
                             ) : leaderboard.map((row, i) => (

@@ -26,23 +26,23 @@ export function TeamBrowserPanel({ hackathons = [] }) {
     const requestJoin = async (teamId) => {
         try {
             await axiosInstance.post('/api/participant/team/join', { teamId });
-            alert('Application submitted successfully!');
+            alert('Request sent successfully!');
         } catch (e) {
-            alert(e.response?.data?.message || 'Synchronization error. You may have a pending request or active membership.');
+            alert(e.response?.data?.message || 'Error occurred. You may have a pending request or active membership.');
         }
     };
 
     return (
         <div style={{ animation: 'fadeIn 0.3s ease-out' }}>
             <header style={{ marginBottom: '2.5rem' }}>
-                <h2 style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '0.5rem' }}>Venture Browser</h2>
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Discover and join high-impact teams in the ecosystem.</p>
+                <h2 style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '0.5rem' }}>Browse Teams</h2>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Find and join a team for a hackathon.</p>
             </header>
 
             <div className="card" style={{ padding: '1.5rem', marginBottom: '2.5rem', background: 'var(--bg-soft)', border: 'none' }}>
-                <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>Select Competition</label>
+                <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>Select Hackathon</label>
                 <select className="input" style={{ background: 'white', maxWidth: '400px' }} value={selectedHackathon} onChange={e => setSelectedHackathon(e.target.value)}>
-                    <option value="">Choose competition...</option>
+                    <option value="">Select hackathon...</option>
                     {hackathons.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
                 </select>
             </div>
@@ -51,11 +51,11 @@ export function TeamBrowserPanel({ hackathons = [] }) {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
                     {loading ? (
                         <div className="card col-span-full" style={{ padding: '4rem', textAlign: 'center' }}>
-                            <p style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Synchronizing active ventures...</p>
+                            <p style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Loading teams...</p>
                         </div>
                     ) : teams.length === 0 ? (
                         <div className="card col-span-full" style={{ padding: '4rem', textAlign: 'center', border: '1px dashed var(--border)', background: 'var(--bg-soft)' }}>
-                            <p style={{ color: 'var(--text-muted)', fontWeight: 600 }}>No ventures established in this competition yet.</p>
+                            <p style={{ color: 'var(--text-muted)', fontWeight: 600 }}>No teams found for this hackathon yet.</p>
                         </div>
                     ) : teams.map(t => (
                         <div key={t.id} className="card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '1.75rem', transition: 'transform 0.2s ease', cursor: 'default' }}
@@ -63,12 +63,12 @@ export function TeamBrowserPanel({ hackathons = [] }) {
                              onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}>
                             <div>
                                 <h3 style={{ fontSize: '1.125rem', fontWeight: 800, marginBottom: '0.5rem', color: 'var(--accent)' }}>{t.teamName}</h3>
-                                <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '1.25rem' }}>Venturer ID: #{t.id}</p>
+                                <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '1.25rem' }}>Team ID: #{t.id}</p>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem' }}>
                                     <div style={{ flex: 1, height: '4px', background: 'var(--bg-soft)', borderRadius: '2px', overflow: 'hidden' }}>
                                         <div style={{ height: '100%', width: `${(t.memberCount / (t.maxCapacity || 4)) * 100}%`, background: 'var(--accent)' }}></div>
                                     </div>
-                                    <span style={{ fontSize: '0.625rem', fontWeight: 800, color: 'var(--text-muted)' }}>{t.memberCount}/{t.maxCapacity || 4} OCCUPIED</span>
+                                    <span style={{ fontSize: '0.625rem', fontWeight: 800, color: 'var(--text-muted)' }}>{t.memberCount}/{t.maxCapacity || 4} MEMBERS</span>
                                 </div>
                             </div>
                             <button
@@ -77,7 +77,7 @@ export function TeamBrowserPanel({ hackathons = [] }) {
                                 className="btn btn-primary"
                                 style={{ width: '100%', fontSize: '0.75rem', letterSpacing: '0.05em' }}
                             >
-                                {t.memberCount >= (t.maxCapacity || 4) ? 'CAPACITY REACHED' : myTeam ? 'MEMBER OF ANOTHER TEAM' : 'REQUEST ALLIANCE'}
+                                {t.memberCount >= (t.maxCapacity || 4) ? 'TEAM FULL' : myTeam ? 'ALREADY IN A TEAM' : 'REQUEST TO JOIN'}
                             </button>
                         </div>
                     ))}
@@ -101,7 +101,7 @@ export function JoinRequestsPanel() {
     useEffect(() => { load(); }, []);
 
     const accept = async (id) => {
-        try { await axiosInstance.put(`/api/participant/team/join-requests/${id}/accept`); load(); } catch (e) { alert('Error acknowledging alliance request.'); }
+        try { await axiosInstance.put(`/api/participant/team/join-requests/${id}/accept`); load(); } catch (e) { alert('Error accepting request.'); }
     };
     const reject = async (id) => {
         try { await axiosInstance.put(`/api/participant/team/join-requests/${id}/reject`); load(); } catch (e) { alert('Error rejecting request.'); }
@@ -110,24 +110,24 @@ export function JoinRequestsPanel() {
     return (
         <div style={{ animation: 'fadeIn 0.3s ease-out' }}>
             <header style={{ marginBottom: '2.5rem' }}>
-                <h2 style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '0.5rem' }}>Alliance Requests</h2>
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Manage pending join inquiries from other participants.</p>
+                <h2 style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '0.5rem' }}>Join Requests</h2>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Manage requests from users wanting to join your team.</p>
             </header>
 
             <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead>
                         <tr style={{ background: 'var(--bg-soft)', borderBottom: '1px solid var(--border)' }}>
-                            <th style={{ padding: '1rem 1.5rem', textAlign: 'left', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Identity</th>
-                            <th style={{ padding: '1rem 1.5rem', textAlign: 'left', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Authorization Status</th>
-                            <th style={{ padding: '1rem 1.5rem', textAlign: 'right', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Operations</th>
+                            <th style={{ padding: '1rem 1.5rem', textAlign: 'left', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>User</th>
+                            <th style={{ padding: '1rem 1.5rem', textAlign: 'left', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Status</th>
+                            <th style={{ padding: '1rem 1.5rem', textAlign: 'right', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {loading ? (
-                            <tr><td colSpan="3" style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.875rem' }}>Synchronizing request stream...</td></tr>
+                            <tr><td colSpan="3" style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.875rem' }}>Loading requests...</td></tr>
                         ) : requests.length === 0 ? (
-                            <tr><td colSpan="3" style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.875rem' }}>No pending alliance requests.</td></tr>
+                            <tr><td colSpan="3" style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.875rem' }}>No pending requests.</td></tr>
                         ) : requests.map(r => (
                             <tr key={r.id} style={{ borderBottom: '1px solid var(--border)' }}>
                                 <td style={{ padding: '1.25rem 1.5rem' }}>
@@ -174,10 +174,10 @@ export function TeamProfilePanel({ hackathons = [] }) {
         setIsCreating(true);
         try {
             await axiosInstance.post('/api/participant/team', data);
-            alert('Venture successfully established.');
+            alert('Team created successfully.');
             load();
         } catch (e) {
-            alert(e.response?.data?.message || 'Error initializing venture. Duplicate name or membership policy violation.');
+            alert(e.response?.data?.message || 'Error occurred. Name may be taken or you already have a team.');
         } finally {
             setIsCreating(false);
         }
@@ -187,29 +187,29 @@ export function TeamProfilePanel({ hackathons = [] }) {
         return (
             <div style={{ animation: 'fadeIn 0.3s ease-out' }}>
                 <header style={{ marginBottom: '2.5rem' }}>
-                    <h2 style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '0.5rem' }}>Venture Identity</h2>
-                    <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Core parameters of your current competition alliance.</p>
+                    <h2 style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '0.5rem' }}>My Team</h2>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Details about your current hackathon team.</p>
                 </header>
 
                 <div className="card" style={{ padding: '2rem', background: 'var(--bg-soft)', border: 'none' }}>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '2.5rem' }}>
                         <div>
-                            <p style={{ fontSize: '0.625rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.75rem' }}>Venture Cognomen</p>
+                            <p style={{ fontSize: '0.625rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.75rem' }}>Team Name</p>
                             <h3 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--accent)' }}>{myTeam.teamName}</h3>
                         </div>
                         <div>
-                            <p style={{ fontSize: '0.625rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.75rem' }}>Competition Context</p>
+                            <p style={{ fontSize: '0.625rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.75rem' }}>Hackathon</p>
                             <p style={{ fontSize: '1rem', fontWeight: 700 }}>Identifier #{myTeam.hackathonId}</p>
                         </div>
                         <div>
-                            <p style={{ fontSize: '0.625rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.75rem' }}>Authorization Status</p>
+                            <p style={{ fontSize: '0.625rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.75rem' }}>Status</p>
                             <span className={`badge ${myTeam.acceptanceStatus === 'ACCEPTED' ? 'badge-success' : myTeam.acceptanceStatus === 'REJECTED' ? 'badge-error' : 'badge-accent'}`} style={{ fontSize: '0.625rem' }}>
                                 {myTeam.acceptanceStatus}
                             </span>
                         </div>
                         <div>
-                            <p style={{ fontSize: '0.625rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.75rem' }}>Alliance Architect</p>
-                            <p style={{ fontSize: '0.875rem', fontWeight: 700 }}>{myTeam.createdBy?.id === user?.id ? 'Initial Architect (You)' : (myTeam.createdBy?.email || 'External Architect')}</p>
+                            <p style={{ fontSize: '0.625rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.75rem' }}>Team Lead</p>
+                            <p style={{ fontSize: '0.875rem', fontWeight: 700 }}>{myTeam.createdBy?.id === user?.id ? 'Team Lead (You)' : (myTeam.createdBy?.email || 'Team Lead')}</p>
                         </div>
                     </div>
                 </div>
@@ -220,24 +220,24 @@ export function TeamProfilePanel({ hackathons = [] }) {
     return (
         <div style={{ animation: 'fadeIn 0.3s ease-out', maxWidth: '600px' }}>
             <header style={{ marginBottom: '2.5rem' }}>
-                <h2 style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '0.5rem' }}>Establish Venture</h2>
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Initialize a new team to begin your competition trajectory.</p>
+                <h2 style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '0.5rem' }}>Create Team</h2>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Create a new team to participate in a hackathon.</p>
             </header>
 
             <form onSubmit={handleSubmit(createTeam)} className="card" style={{ padding: '2rem' }}>
                 <div style={{ marginBottom: '1.75rem' }}>
                     <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>Competition</label>
                     <select className="input" {...register('hackathonId', { required: true })}>
-                        <option value="">Choose competition...</option>
+                        <option value="">Select hackathon...</option>
                         {hackathons.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
                     </select>
                 </div>
                 <div style={{ marginBottom: '2rem' }}>
-                    <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>Venture Title</label>
-                    <input className="input" placeholder="Enter high-impact venture name..." {...register('teamName', { required: true })} />
+                    <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>Team Name</label>
+                    <input className="input" placeholder="Enter your team name..." {...register('teamName', { required: true })} />
                 </div>
                 <button type="submit" disabled={isCreating} className="btn btn-primary" style={{ width: '100%', padding: '1rem', fontSize: '0.875rem', letterSpacing: '0.05em' }}>
-                    {isCreating ? 'SYNCHRONIZING...' : 'INITIALIZE VENTURE'}
+                    {isCreating ? 'CREATING...' : 'CREATE TEAM'}
                 </button>
             </form>
         </div>
@@ -259,25 +259,25 @@ export function TeamMembersPanel() {
     useEffect(() => { load(); }, []);
 
     const removeMember = async (userId) => {
-        if (!window.confirm('Acknowledge member removal? Data synchronization will be irreversible.')) return;
+        if (!window.confirm('Are you sure you want to remove this member?')) return;
         try {
             await axiosInstance.delete(`/api/participant/team/members/${userId}`);
             load();
         } catch (e) {
-            alert('Membership alteration failed. Verify permissions.');
+            alert('Failed to remove member.');
         }
     };
 
-    if (loading) return <div style={{ padding: '4rem', textAlign: 'center', color: 'var(--text-muted)', fontWeight: 600 }}>Synchronizing active registry...</div>;
-    if (!myTeam) return <div className="card" style={{ padding: '4rem', textAlign: 'center', border: '1px dashed var(--border)', background: 'var(--bg-soft)' }}><p style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Inactive status. Join or establish a venture to see members.</p></div>;
+    if (loading) return <div style={{ padding: '4rem', textAlign: 'center', color: 'var(--text-muted)', fontWeight: 600 }}>Loading members...</div>;
+    if (!myTeam) return <div className="card" style={{ padding: '4rem', textAlign: 'center', border: '1px dashed var(--border)', background: 'var(--bg-soft)' }}><p style={{ color: 'var(--text-muted)', fontWeight: 600 }}>You are not in a team yet.</p></div>;
 
     const isLead = myTeam.createdBy?.id === user?.id;
 
     return (
         <div style={{ animation: 'fadeIn 0.3s ease-out' }}>
             <header style={{ marginBottom: '2.5rem' }}>
-                <h2 style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '0.5rem' }}>Venture Alliance ({myTeam.members?.length || 0})</h2>
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Registry of participants currently mapped to this alliance.</p>
+                <h2 style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '0.5rem' }}>Team Members ({myTeam.members?.length || 0})</h2>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Users currently in your team.</p>
             </header>
 
             <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
@@ -296,10 +296,10 @@ export function TeamMembersPanel() {
                                             className="btn"
                                             style={{ background: 'none', border: '1px solid var(--border)', color: 'var(--error)', fontSize: '0.625rem', fontWeight: 800, padding: '0.5rem 1rem' }}
                                         >
-                                            TERMINATE ALLIANCE
+                                            REMOVE MEMBER
                                         </button>
                                     )}
-                                    {m.id === myTeam.createdBy?.id && <span className="badge badge-primary" style={{ fontSize: '0.625rem' }}>INITIAL ARCHITECT</span>}
+                                    {m.id === myTeam.createdBy?.id && <span className="badge badge-primary" style={{ fontSize: '0.625rem' }}>TEAM LEAD</span>}
                                 </td>
                             </tr>
                         ))}
@@ -330,40 +330,40 @@ export function ProjectSubmissionPanel() {
         setIsSaving(true);
         try {
             await axiosInstance.put('/api/participant/team/submission', data);
-            alert('Submission URLs synchronized successfully.');
+            alert('Project submitted successfully.');
         } catch (e) {
-            alert(e.response?.data?.message || 'Synchronization error. Verify https format.');
+            alert(e.response?.data?.message || 'Error occurred. Please verify link format.');
         } finally {
             setIsSaving(false);
         }
     };
 
-    if (!myTeam.id) return <div className="card" style={{ padding: '4rem', textAlign: 'center', border: '1px dashed var(--border)', background: 'var(--bg-soft)' }}><p style={{ color: 'var(--text-muted)', fontWeight: 600 }}>No active venture detected. Submission inactive.</p></div>;
+    if (!myTeam.id) return <div className="card" style={{ padding: '4rem', textAlign: 'center', border: '1px dashed var(--border)', background: 'var(--bg-soft)' }}><p style={{ color: 'var(--text-muted)', fontWeight: 600 }}>No active team found. Submission disabled.</p></div>;
 
     return (
         <div style={{ animation: 'fadeIn 0.3s ease-out', maxWidth: '800px' }}>
             <header style={{ marginBottom: '2.5rem' }}>
-                <h2 style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '0.5rem' }}>Venture Submission</h2>
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Finalize your competition trajectory by providing project identifiers.</p>
+                <h2 style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '0.5rem' }}>Submit Project</h2>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Submit your project links for evaluation.</p>
             </header>
 
             <form onSubmit={handleSubmit(submitUrls)} className="card" style={{ padding: '2.5rem' }}>
                 <div style={{ display: 'grid', gap: '2rem' }}>
                     <div>
-                        <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>Source Ledger (GitHub)</label>
-                        <input type="url" className="input" placeholder="https://github.com/identity/venture-repository" {...register('githubUrl')} />
+                        <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>GitHub Link</label>
+                        <input type="url" className="input" placeholder="https://github.com/user/project" {...register('githubUrl')} />
                     </div>
                     <div>
-                        <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>Simulation (Live Demo)</label>
-                        <input type="url" className="input" placeholder="https://simulation.venture.io" {...register('demoUrl')} />
+                        <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>Demo Link</label>
+                        <input type="url" className="input" placeholder="https://project.demo.com" {...register('demoUrl')} />
                     </div>
                     <div>
-                        <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>Visual Synthesis (Presentation)</label>
-                        <input type="url" className="input" placeholder="https://synthesis.cloud/pitch" {...register('presentationUrl')} />
+                        <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>Presentation Link</label>
+                        <input type="url" className="input" placeholder="https://presentation.com/pitch" {...register('presentationUrl')} />
                     </div>
                 </div>
                 <button type="submit" disabled={isSaving} className="btn btn-primary" style={{ width: '100%', padding: '1rem', marginTop: '2.5rem', fontSize: '0.875rem', letterSpacing: '0.05em' }}>
-                    {isSaving ? 'SYNCHRONIZING...' : 'FINALIZE SUBMISSION'}
+                    {isSaving ? 'SAVING...' : 'SUBMIT PROJECT'}
                 </button>
             </form>
         </div>
@@ -385,22 +385,22 @@ export function MyScoresPanel() {
     return (
         <div style={{ animation: 'fadeIn 0.3s ease-out' }}>
             <header style={{ marginBottom: '2.5rem' }}>
-                <h2 style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '0.5rem' }}>Evaluation Synthesis</h2>
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Review received judicial evaluations for your current venture alliance.</p>
+                <h2 style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '0.5rem' }}>My Scores</h2>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>View scores and feedback from judges.</p>
             </header>
 
             <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead>
                         <tr style={{ background: 'var(--bg-soft)', borderBottom: '1px solid var(--border)' }}>
-                            <th style={{ padding: '1rem 1.5rem', textAlign: 'left', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Metric ID</th>
-                            <th style={{ padding: '1rem 1.5rem', textAlign: 'center', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Precision Score</th>
-                            <th style={{ padding: '1rem 1.5rem', textAlign: 'right', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Judicial Observations</th>
+                            <th style={{ padding: '1rem 1.5rem', textAlign: 'left', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Criteria</th>
+                            <th style={{ padding: '1rem 1.5rem', textAlign: 'center', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Score</th>
+                            <th style={{ padding: '1rem 1.5rem', textAlign: 'right', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Judge Comments</th>
                         </tr>
                     </thead>
                     <tbody>
                         {loading ? (
-                            <tr><td colSpan="3" style={{ padding: '4rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.875rem' }}>Synchronizing audit...</td></tr>
+                            <tr><td colSpan="3" style={{ padding: '4rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.875rem' }}>Loading scores...</td></tr>
                         ) : scores.length === 0 ? (
                             <tr><td colSpan="3" style={{ padding: '4rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.875rem' }}>No evaluations on record yet.</td></tr>
                         ) : scores.map(s => (
@@ -438,22 +438,22 @@ export function ParticipantLeaderboardPanel() {
     return (
         <div style={{ animation: 'fadeIn 0.3s ease-out' }}>
             <header style={{ marginBottom: '2.5rem' }}>
-                <h2 style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '0.5rem' }}>Active Standing</h2>
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Real-time synthesis of overall rankings within the ecosystem.</p>
+                <h2 style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '0.5rem' }}>Leaderboard</h2>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Current standings for your hackathon.</p>
             </header>
 
             <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead>
                         <tr style={{ background: 'var(--bg-soft)', borderBottom: '1px solid var(--border)' }}>
-                            <th style={{ padding: '1rem 1.5rem', textAlign: 'left', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Standing</th>
-                            <th style={{ padding: '1rem 1.5rem', textAlign: 'left', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Venture</th>
-                            <th style={{ padding: '1rem 1.5rem', textAlign: 'right', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Composite Score</th>
+                            <th style={{ padding: '1rem 1.5rem', textAlign: 'left', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Rank</th>
+                            <th style={{ padding: '1rem 1.5rem', textAlign: 'left', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Team</th>
+                            <th style={{ padding: '1rem 1.5rem', textAlign: 'right', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Total Score</th>
                         </tr>
                     </thead>
                     <tbody>
                         {loading ? (
-                            <tr><td colSpan="3" style={{ padding: '4rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.875rem' }}>Calculating standings...</td></tr>
+                            <tr><td colSpan="3" style={{ padding: '4rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.875rem' }}>Loading standings...</td></tr>
                         ) : leaderboard.length === 0 ? (
                             <tr><td colSpan="3" style={{ padding: '4rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.875rem' }}>No ranking data available.</td></tr>
                         ) : leaderboard.map((row, index) => (

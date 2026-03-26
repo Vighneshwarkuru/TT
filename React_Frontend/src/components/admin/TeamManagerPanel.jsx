@@ -10,7 +10,7 @@ export default function TeamManagerPanel() {
     setLoading(true);
     axiosInstance.get('/api/admin/teams')
       .then(r => setTeams(r.data))
-      .catch(() => setError('Failed to synchronize team data.'))
+      .catch(() => setError('Failed to load team data.'))
       .finally(() => setLoading(false));
   };
 
@@ -38,10 +38,10 @@ export default function TeamManagerPanel() {
     <div style={{ animation: 'fadeIn 0.4s ease-out' }}>
       <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3rem' }}>
         <div>
-          <h2 style={{ fontSize: '1.75rem', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: '0.5rem' }}>Team Registry</h2>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.9375rem' }}>Authorize and manage high-stakes competitive alliances.</p>
+          <h2 style={{ fontSize: '1.75rem', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: '0.5rem' }}>All Teams</h2>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.9375rem' }}>Manage team registrations and status.</p>
         </div>
-        <button onClick={load} className="btn" style={{ padding: '0.75rem 1.5rem', background: 'white', border: '1px solid var(--border)', fontSize: '0.8125rem', fontWeight: 800, letterSpacing: '0.05em' }}>REFRESH REGISTRY</button>
+        <button onClick={load} className="btn" style={{ padding: '0.75rem 1.5rem', background: 'white', border: '1px solid var(--border)', fontSize: '0.8125rem', fontWeight: 800, letterSpacing: '0.05em' }}>REFRESH TEAMS</button>
       </header>
 
       {error && (
@@ -54,30 +54,30 @@ export default function TeamManagerPanel() {
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr style={{ background: 'var(--bg-soft)', borderBottom: '1px solid var(--border)' }}>
-              <th style={{ padding: '1.25rem 2rem', textAlign: 'left', fontSize: '0.625rem', fontWeight: 900, textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '0.1em' }}>Alliance Identity</th>
-              <th style={{ padding: '1.25rem 2rem', textAlign: 'left', fontSize: '0.625rem', fontWeight: 900, textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '0.1em' }}>Operational Context</th>
-              <th style={{ padding: '1.25rem 2rem', textAlign: 'left', fontSize: '0.625rem', fontWeight: 900, textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '0.1em' }}>Authorization Status</th>
-              <th style={{ padding: '1.25rem 2rem', textAlign: 'left', fontSize: '0.625rem', fontWeight: 900, textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '0.1em' }}>External Assets</th>
-              <th style={{ padding: '1.25rem 2rem', textAlign: 'right', fontSize: '0.625rem', fontWeight: 900, textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '0.1em' }}>Operations</th>
+              <th style={{ padding: '1.25rem 2rem', textAlign: 'left', fontSize: '0.625rem', fontWeight: 900, textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '0.1em' }}>Team Name</th>
+              <th style={{ padding: '1.25rem 2rem', textAlign: 'left', fontSize: '0.625rem', fontWeight: 900, textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '0.1em' }}>Hackathon</th>
+              <th style={{ padding: '1.25rem 2rem', textAlign: 'left', fontSize: '0.625rem', fontWeight: 900, textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '0.1em' }}>Status</th>
+              <th style={{ padding: '1.25rem 2rem', textAlign: 'left', fontSize: '0.625rem', fontWeight: 900, textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '0.1em' }}>Links</th>
+              <th style={{ padding: '1.25rem 2rem', textAlign: 'right', fontSize: '0.625rem', fontWeight: 900, textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '0.1em' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan="5" style={{ padding: '5rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.875rem', fontWeight: 600, letterSpacing: '0.05em' }}>SYNCHRONIZING REGISTRY...</td>
+                <td colSpan="5" style={{ padding: '5rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.875rem', fontWeight: 600, letterSpacing: '0.05em' }}>LOADING TEAMS...</td>
               </tr>
             ) : teams.length === 0 ? (
               <tr>
-                <td colSpan="5" style={{ padding: '5rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.875rem', fontWeight: 500 }}>No active alliance registrations synchronized.</td>
+                <td colSpan="5" style={{ padding: '5rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.875rem', fontWeight: 500 }}>No team registrations found.</td>
               </tr>
             ) : teams.map(t => (
               <tr key={t.id} style={{ borderBottom: '1px solid var(--border)', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-soft)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                 <td style={{ padding: '1.5rem 2rem' }}>
                   <p style={{ fontWeight: 800, fontSize: '1rem', marginBottom: '0.375rem', color: 'var(--text-main)' }}>{t.teamName}</p>
-                  <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', fontWeight: 600 }}>{t.memberCount} Operational Units</p>
+                  <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', fontWeight: 600 }}>{t.memberCount} Members</p>
                 </td>
                 <td style={{ padding: '1.5rem 2rem' }}>
-                  <span className="badge" style={{ fontSize: '0.625rem', padding: '0.375rem 0.75rem', fontWeight: 800 }}>CONTEXT-{t.hackathonId}</span>
+                  <span className="badge" style={{ fontSize: '0.625rem', padding: '0.375rem 0.75rem', fontWeight: 800 }}>HACKATHON-{t.hackathonId}</span>
                 </td>
                 <td style={{ padding: '1.5rem 2rem' }}>
                   <span className={`badge ${
@@ -98,11 +98,11 @@ export default function TeamManagerPanel() {
                 <td style={{ padding: '1.5rem 2rem', textAlign: 'right' }}>
                   {t.acceptanceStatus === 'PENDING' ? (
                     <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
-                      <button onClick={() => handleAccept(t.id)} className="btn btn-primary" style={{ padding: '0.5rem 1.25rem', fontSize: '0.75rem', fontWeight: 800 }}>AUTHORIZE</button>
-                      <button onClick={() => handleReject(t.id)} className="btn" style={{ padding: '0.5rem 1.25rem', fontSize: '0.75rem', background: 'white', border: '1px solid var(--border)', fontWeight: 800 }}>DECLINE</button>
+                      <button onClick={() => handleAccept(t.id)} className="btn btn-primary" style={{ padding: '0.5rem 1.25rem', fontSize: '0.75rem', fontWeight: 800 }}>APPROVE</button>
+                      <button onClick={() => handleReject(t.id)} className="btn" style={{ padding: '0.5rem 1.25rem', fontSize: '0.75rem', background: 'white', border: '1px solid var(--border)', fontWeight: 800 }}>REJECT</button>
                     </div>
                   ) : (
-                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontStyle: 'italic', fontWeight: 600 }}>REGISTRY LOCKED</span>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontStyle: 'italic', fontWeight: 600 }}>STATUS LOCKED</span>
                   )}
                 </td>
               </tr>

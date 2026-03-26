@@ -8,8 +8,8 @@ import axiosInstance from '../api/axiosInstance';
 const schema = yup.object({
     firstName: yup.string().required('First name required'),
     lastName: yup.string().required('Last name required'),
-    email: yup.string().email('Invalid email protocol').required('Identity required'),
-    password: yup.string().min(6, 'Minimum 6 characters').required('Authorization required'),
+    email: yup.string().email('Invalid email').required('Email required'),
+    password: yup.string().min(6, 'Minimum 6 characters').required('Password required'),
 });
 
 export default function RegisterPage() {
@@ -26,10 +26,10 @@ export default function RegisterPage() {
         setSuccess('');
         try {
             await axiosInstance.post('/api/auth/register', data);
-            setSuccess('Identity established. Diverting to authentication...');
+            setSuccess('Account created successfully. Redirecting to login...');
             setTimeout(() => navigate('/login'), 1500);
         } catch (err) {
-            setApiError(err.response?.data?.message || 'Registration sequence interrupted. Verify data integrity.');
+            setApiError(err.response?.data?.message || 'Registration failed. Please check your information.');
         }
     };
 
@@ -41,14 +41,14 @@ export default function RegisterPage() {
                         Verdict<span style={{ color: 'var(--accent)' }}>Sphere</span>
                     </Link>
                     <p style={{ marginTop: '0.75rem', color: 'var(--text-muted)', fontSize: '0.9375rem', fontWeight: 500 }}>
-                        Establish your presence in the evaluation ecosystem.
+                        Join the hackathon evaluation platform.
                     </p>
                 </div>
 
                 <div className="card" style={{ padding: '2.5rem', boxShadow: '0 20px 40px -10px rgba(0,0,0,0.05)' }}>
                     <header style={{ marginBottom: '2rem' }}>
-                        <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '0.375rem' }}>Account Initialization</h2>
-                        <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>Complete the profile below to proceed.</p>
+                        <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '0.375rem' }}>Create Account</h2>
+                        <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>Fill in your details to get started.</p>
                     </header>
 
                     {apiError && (
@@ -64,9 +64,9 @@ export default function RegisterPage() {
                     )}
 
                     <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
+                        <div className="grid-responsive">
                             <div>
-                                <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.625rem', letterSpacing: '0.05em' }}>Forename</label>
+                                <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.625rem', letterSpacing: '0.05em' }}>First Name</label>
                                 <input
                                     {...register('firstName')}
                                     type="text"
@@ -78,7 +78,7 @@ export default function RegisterPage() {
                             </div>
 
                             <div>
-                                <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.625rem', letterSpacing: '0.05em' }}>Surname</label>
+                                <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.625rem', letterSpacing: '0.05em' }}>Last Name</label>
                                 <input
                                     {...register('lastName')}
                                     type="text"
@@ -91,19 +91,19 @@ export default function RegisterPage() {
                         </div>
 
                         <div>
-                            <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.625rem', letterSpacing: '0.05em' }}>Identity (Email)</label>
+                            <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.625rem', letterSpacing: '0.05em' }}>Email</label>
                             <input
                                 {...register('email')}
                                 type="email"
                                 className="input"
                                 style={errors.email ? { borderColor: 'var(--error)' } : {}}
-                                placeholder="architect@verdictsphere.io"
+                                placeholder="email@example.com"
                             />
                             {errors.email && <p style={{ marginTop: '0.5rem', fontSize: '0.6875rem', color: 'var(--error)', fontWeight: 600 }}>{errors.email.message}</p>}
                         </div>
 
                         <div>
-                            <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.625rem', letterSpacing: '0.05em' }}>Authorization (Password)</label>
+                            <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.625rem', letterSpacing: '0.05em' }}>Password</label>
                             <input
                                 {...register('password')}
                                 type="password"
@@ -120,22 +120,22 @@ export default function RegisterPage() {
                             className="btn btn-primary"
                             style={{ width: '100%', padding: '1rem', marginTop: '0.5rem', fontSize: '0.875rem', letterSpacing: '0.05em' }}
                         >
-                            {isSubmitting ? 'ESTABLISHING...' : 'ESTABLISH IDENTITY'}
+                            {isSubmitting ? 'SIGNING UP...' : 'SIGN UP'}
                         </button>
                     </form>
 
                     <div style={{ marginTop: '2.5rem', textAlign: 'center', paddingTop: '1.75rem', borderTop: '1px solid var(--border)' }}>
                         <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
-                            Already an architect?{' '}
+                            Already have an account?{' '}
                             <Link to="/login" style={{ fontWeight: 800, color: 'var(--accent)', textDecoration: 'none' }}>
-                                INITIALIZE SESSION
+                                LOGIN
                             </Link>
                         </p>
                     </div>
                 </div>
 
                 <footer style={{ marginTop: '3rem', textAlign: 'center' }}>
-                    <p style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', fontWeight: 600, letterSpacing: '0.025em' }}>&copy; 2026 VERDICTSPHERE ECOSYSTEM. ALL RIGHTS RESERVED.</p>
+                    <p style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', fontWeight: 600, letterSpacing: '0.025em' }}>&copy; 2026 VERDICTSPHERE. ALL RIGHTS RESERVED.</p>
                 </footer>
             </div>
         </div>

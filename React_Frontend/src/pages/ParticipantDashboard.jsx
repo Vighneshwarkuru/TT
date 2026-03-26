@@ -25,7 +25,7 @@ export default function ParticipantDashboard() {
                         Welcome back, <span style={{ color: 'var(--accent)' }}>{user?.firstName || 'Participant'}</span>
                     </h2>
                     <p style={{ color: 'var(--text-muted)', fontSize: '1.125rem', maxWidth: '600px' }}>
-                        Join new challenges or continue your innovation journey. Your next great idea starts here.
+                        Join new challenges or continue your project. Your next great idea starts here.
                     </p>
                 </header>
 
@@ -36,7 +36,7 @@ export default function ParticipantDashboard() {
 
                 {loading ? (
                     <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--text-muted)' }}>
-                        <p>Looking for hackathons...</p>
+                        <p>Loading hackathons...</p>
                     </div>
                 ) : hackathons.length > 0 ? (
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.5rem' }}>

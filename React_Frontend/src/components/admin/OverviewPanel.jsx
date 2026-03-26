@@ -42,7 +42,7 @@ export default function OverviewPanel() {
   return (
     <div style={{ animation: 'fadeIn 0.5s ease-out' }}>
       <header style={{ marginBottom: '2.5rem' }}>
-          <h3 style={{ fontSize: '1.25rem', fontWeight: 800, letterSpacing: '-0.025em' }}>Platform Telemetry</h3>
+          <h3 style={{ fontSize: '1.25rem', fontWeight: 800, letterSpacing: '-0.025em' }}>Platform Overview</h3>
       </header>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '2rem', marginBottom: '4rem' }}>
@@ -66,13 +66,13 @@ export default function OverviewPanel() {
       <div className="card" style={{ padding: '2.5rem', background: 'var(--bg-soft)', border: 'none', borderRadius: '24px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.25rem' }}>
             <div style={{ width: '8px', height: '8px', background: 'var(--accent)', borderRadius: '50%', animation: 'ping 1.5s infinite' }}></div>
-            <h4 style={{ fontSize: '1rem', fontWeight: 800 }}>Global Status Report</h4>
+            <h4 style={{ fontSize: '1rem', fontWeight: 800 }}>Platform Status</h4>
         </div>
         <p style={{ color: 'var(--text-muted)', fontSize: '0.9375rem', lineHeight: 1.7, maxWidth: '800px', fontWeight: 500 }}>
-          All systems operational. The synchronization engine is currently monitoring {stats.teams} team deployments across {stats.hackathons} active competition clusters. 
+          All systems operational. Monitoring {stats.teams} teams across {stats.hackathons} active hackathons. 
           {stats.pendingTeams > 0 ? (
-              <span style={{ color: 'var(--accent)', fontWeight: 700 }}> {stats.pendingTeams} strategic alliances are currently awaiting administrative authorization.</span>
-          ) : " No pending authorizations detected."}
+              <span style={{ color: 'var(--accent)', fontWeight: 700 }}> {stats.pendingTeams} teams are currently awaiting review.</span>
+          ) : " No pending teams found."}
         </p>
       </div>
     </div>

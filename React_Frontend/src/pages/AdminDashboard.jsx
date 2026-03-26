@@ -52,7 +52,7 @@ export default function AdminDashboard() {
   if (loading) return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-soft)' }}>
         <div style={{ padding: '2rem', textAlign: 'center' }}>
-            <p style={{ color: 'var(--text-muted)' }}>Initialising Workspace...</p>
+            <p style={{ color: 'var(--text-muted)' }}>Loading Dashboard...</p>
         </div>
     </div>
   );
@@ -66,7 +66,7 @@ export default function AdminDashboard() {
                         Admin <span style={{ color: 'var(--accent)' }}>Dashboard</span>
                     </h2>
                     <p style={{ color: 'var(--text-muted)', fontSize: '1.125rem', maxWidth: '600px' }}>
-                        Manage your innovation ecosystem. Create, monitor, and evaluate hackathons from a single command center.
+                        Manage all platform users, judges, and hackathons in one place.
                     </p>
                 </div>
                 <button 
@@ -148,7 +148,7 @@ export default function AdminDashboard() {
                                             </div>
 
                                             <div style={{ marginTop: '1.25rem', textAlign: 'center', color: 'var(--accent)', fontSize: '0.75rem', fontWeight: 700 }}>
-                                                Manage Workspace &rarr;
+                                                View Hackathon &rarr;
                                             </div>
                                         </div>
                                     ))}

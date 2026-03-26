@@ -7,8 +7,8 @@ import axiosInstance from '../api/axiosInstance';
 import { useAuth } from '../context/AuthContext';
 
 const schema = yup.object({
-    email: yup.string().email('Invalid email protocol').required('Identity required'),
-    password: yup.string().required('Authorization required'),
+    email: yup.string().email('Invalid email').required('Email required'),
+    password: yup.string().required('Password required'),
 });
 
 export default function LoginPage() {
@@ -30,7 +30,7 @@ export default function LoginPage() {
             else if (role === 'JUDGE') navigate('/judge');
             else navigate('/participant');
         } catch (err) {
-            setApiError(err.response?.data?.message || 'Authentication sequence failed. Verify credentials and network status.');
+            setApiError(err.response?.data?.message || 'Login failed. Check your email and password.');
         }
     };
 
@@ -42,14 +42,14 @@ export default function LoginPage() {
                         Verdict<span style={{ color: 'var(--accent)' }}>Sphere</span>
                     </Link>
                     <p style={{ marginTop: '0.75rem', color: 'var(--text-muted)', fontSize: '0.9375rem', fontWeight: 500 }}>
-                        High-precision evaluation ecosystem.
+                        Hackathon Evaluation Platform
                     </p>
                 </div>
 
                 <div className="card" style={{ padding: '2.5rem', boxShadow: '0 20px 40px -10px rgba(0,0,0,0.05)' }}>
                     <header style={{ marginBottom: '2rem' }}>
-                        <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '0.375rem' }}>Authentication</h2>
-                        <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>Synchronize your identity to proceed.</p>
+                        <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '0.375rem' }}>Login</h2>
+                        <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>Sign in to your account to proceed.</p>
                     </header>
 
                     {apiError && (
@@ -60,20 +60,20 @@ export default function LoginPage() {
 
                     <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                         <div>
-                            <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.625rem', letterSpacing: '0.05em' }}>Identity (Email)</label>
+                            <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.625rem', letterSpacing: '0.05em' }}>Email</label>
                             <input
                                 {...register('email')}
                                 type="email"
                                 className="input"
                                 style={errors.email ? { borderColor: 'var(--error)' } : {}}
-                                placeholder="architect@verdictsphere.io"
+                                placeholder="email@example.com"
                             />
                             {errors.email && <p style={{ marginTop: '0.5rem', fontSize: '0.6875rem', color: 'var(--error)', fontWeight: 600 }}>{errors.email.message}</p>}
                         </div>
 
                         <div>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.625rem' }}>
-                                <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '0.05em' }}>Authorization (Password)</label>
+                                <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '0.05em' }}>Password</label>
                             </div>
                             <input
                                 {...register('password')}
@@ -91,22 +91,22 @@ export default function LoginPage() {
                             className="btn btn-primary"
                             style={{ width: '100%', padding: '1rem', marginTop: '0.5rem', fontSize: '0.875rem', letterSpacing: '0.05em' }}
                         >
-                            {isSubmitting ? 'SYNCHRONIZING...' : 'INITIALIZE SESSION'}
+                            {isSubmitting ? 'LOGGING IN...' : 'LOGIN'}
                         </button>
                     </form>
 
                     <div style={{ marginTop: '2.5rem', textAlign: 'center', paddingTop: '1.75rem', borderTop: '1px solid var(--border)' }}>
                         <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
-                            New architect?{' '}
+                            New user?{' '}
                             <Link to="/register" style={{ fontWeight: 800, color: 'var(--accent)', textDecoration: 'none' }}>
-                                ESTABLISH ACCOUNT
+                                SIGN UP
                             </Link>
                         </p>
                     </div>
                 </div>
                 
                 <footer style={{ marginTop: '3rem', textAlign: 'center' }}>
-                   <p style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', fontWeight: 600, letterSpacing: '0.025em' }}>&copy; 2026 VERDICTSPHERE ECOSYSTEM. ALL RIGHTS RESERVED.</p>
+                   <p style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', fontWeight: 600, letterSpacing: '0.025em' }}>&copy; 2026 VERDICTSPHERE. ALL RIGHTS RESERVED.</p>
                 </footer>
             </div>
         </div>

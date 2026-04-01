@@ -29,6 +29,11 @@ public class TeamAcceptanceService {
         Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new EntityNotFoundException("Team not found with id: " + teamId));
 
+        long memberCount = teamMemberRepository.countByTeam(team);
+        if (memberCount < 2) {
+            throw new com.verdictsphere.exception.MinimumTeamSizeException("Team must have at least 2 members before being accepted.");
+        }
+
         team.setAcceptanceStatus(AcceptanceStatus.ACCEPTED);
         teamRepository.save(team);
 

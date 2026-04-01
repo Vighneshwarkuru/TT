@@ -138,6 +138,13 @@ public class GlobalExceptionHandler {
                 .body(buildError(HttpStatus.FORBIDDEN, ex.getMessage(), req.getRequestURI()));
     }
 
+    @ExceptionHandler(MinimumTeamSizeException.class)
+    public ResponseEntity<Map<String, Object>> handleMinimumTeamSize(
+            MinimumTeamSizeException ex, HttpServletRequest req) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(buildError(HttpStatus.BAD_REQUEST, ex.getMessage(), req.getRequestURI()));
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleValidation(
             MethodArgumentNotValidException ex, HttpServletRequest req) {

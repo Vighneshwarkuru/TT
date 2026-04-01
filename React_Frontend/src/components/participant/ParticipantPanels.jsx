@@ -41,10 +41,16 @@ export function TeamBrowserPanel({ hackathons = [] }) {
 
             <div className="card" style={{ padding: '1.5rem', marginBottom: '2.5rem', background: 'var(--bg-soft)', border: 'none' }}>
                 <label style={{ display: 'block', fontSize: '0.625rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>Select Hackathon</label>
-                <select className="input" style={{ background: 'white', maxWidth: '400px' }} value={selectedHackathon} onChange={e => setSelectedHackathon(e.target.value)}>
-                    <option value="">Select hackathon...</option>
-                    {hackathons.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
-                </select>
+                {hackathons.length === 0 ? (
+                    <div style={{ padding: '1rem', border: '1px dashed var(--border)', borderRadius: 'var(--radius)', background: 'white', textAlign: 'center' }}>
+                        <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>No active hackathons found. Ask your administrator to activate one.</p>
+                    </div>
+                ) : (
+                    <select className="input" style={{ background: 'white', maxWidth: '400px' }} value={selectedHackathon} onChange={e => setSelectedHackathon(e.target.value)}>
+                        <option value="">Select hackathon...</option>
+                        {hackathons.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
+                    </select>
+                )}
             </div>
 
             {selectedHackathon ? (

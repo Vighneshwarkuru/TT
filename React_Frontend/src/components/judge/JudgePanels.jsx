@@ -264,6 +264,8 @@ export function EvaluationFormPanel() {
 export function MyEvaluationsPanel() {
     const [evals, setEvals] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [aiSummaries, setAiSummaries] = useState({});
+    const [aiLoading, setAiLoading] = useState({});
 
     useEffect(() => {
         setLoading(true);
@@ -273,45 +275,96 @@ export function MyEvaluationsPanel() {
             .finally(() => setLoading(false));
     }, []);
 
+    // Group evaluations by teamId
+    const grouped = evals.reduce((acc, e) => {
+        const key = e.teamId;
+        if (!acc[key]) acc[key] = [];
+        acc[key].push(e);
+        return acc;
+    }, {});
+
+    const generateSummary = async (teamId, teamEvals) => {
+        setAiLoading(prev => ({ ...prev, [teamId]: true }));
+        try {
+            const res = await axiosInstance.post('/api/judge/ai-feedback', {
+                teamName: `Team #${teamId}`,
+                evaluations: teamEvals
+            });
+            setAiSummaries(prev => ({ ...prev, [teamId]: res.data.summary }));
+        } catch (e) {
+            setAiSummaries(prev => ({ ...prev, [teamId]: 'Failed to generate summary. Please try again.' }));
+        } finally {
+            setAiLoading(prev => ({ ...prev, [teamId]: false }));
+        }
+    };
+
     return (
         <div style={{ animation: 'fadeIn 0.3s ease-out' }}>
             <header style={{ marginBottom: '2rem' }}>
                 <h2 style={{ fontSize: '1.25rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '0.5rem' }}>My Evaluations</h2>
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>List of evaluations you have submitted.</p>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Review submitted scores and generate AI-powered feedback summaries.</p>
             </header>
 
-            <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                    <thead>
-                        <tr style={{ background: 'var(--bg-soft)', borderBottom: '1px solid var(--border)' }}>
-                            <th style={{ padding: '1rem 1.5rem', textAlign: 'left', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Team Name</th>
-                            <th style={{ padding: '1rem 1.5rem', textAlign: 'left', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Criteria</th>
-                            <th style={{ padding: '1rem 1.5rem', textAlign: 'center', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Score</th>
-                            <th style={{ padding: '1rem 1.5rem', textAlign: 'right', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Comments</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {loading ? (
-                            <tr><td colSpan="4" style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.875rem' }}>Loading evaluations...</td></tr>
-                        ) : evals.length === 0 ? (
-                            <tr><td colSpan="4" style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.875rem' }}>No submissions on record.</td></tr>
-                        ) : evals.map(e => (
-                            <tr key={e.id} style={{ borderBottom: '1px solid var(--border)' }}>
-                                <td style={{ padding: '1.25rem 1.5rem', fontWeight: 700, fontSize: '0.875rem' }}>Team #{e.teamId}</td>
-                                <td style={{ padding: '1.25rem 1.5rem' }}>
-                                    <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)' }}>ID {e.criteriaId}</span>
-                                </td>
-                                <td style={{ padding: '1.25rem 1.5rem', textAlign: 'center' }}>
-                                    <span style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--accent)' }}>{e.score}</span>
-                                </td>
-                                <td style={{ padding: '1.25rem 1.5rem', textAlign: 'right' }}>
-                                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontStyle: 'italic', maxWidth: '300px', marginLeft: 'auto' }}>{e.remarks || 'No qualitative data.'}</p>
-                                </td>
+            {loading ? (
+                <div className="card" style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.875rem' }}>Loading evaluations...</div>
+            ) : Object.keys(grouped).length === 0 ? (
+                <div className="card" style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.875rem' }}>No submissions on record.</div>
+            ) : Object.entries(grouped).map(([teamId, teamEvals]) => (
+                <div key={teamId} className="card" style={{ marginBottom: '1.5rem', padding: 0, overflow: 'hidden' }}>
+                    {/* Team header */}
+                    <div style={{ padding: '1.25rem 1.5rem', background: 'var(--bg-soft)', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontWeight: 800, fontSize: '0.9375rem' }}>Team #{teamId}</span>
+                        <button
+                            onClick={() => generateSummary(teamId, teamEvals)}
+                            disabled={aiLoading[teamId]}
+                            className="btn btn-primary"
+                            style={{ padding: '0.4rem 1rem', fontSize: '0.625rem', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+                        >
+                            {aiLoading[teamId] ? (
+                                <>
+                                    <span style={{ display: 'inline-block', width: '10px', height: '10px', border: '2px solid rgba(255,255,255,0.4)', borderTopColor: 'white', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }}></span>
+                                    GENERATING...
+                                </>
+                            ) : '✦ AI SUMMARY'}
+                        </button>
+                    </div>
+
+                    {/* AI summary box */}
+                    {aiSummaries[teamId] && (
+                        <div style={{ padding: '1.25rem 1.5rem', background: 'linear-gradient(135deg, rgba(99,102,241,0.06), rgba(139,92,246,0.06))', borderBottom: '1px solid var(--border)', display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
+                            <span style={{ fontSize: '1.25rem', flexShrink: 0 }}>✦</span>
+                            <p style={{ fontSize: '0.875rem', lineHeight: 1.7, color: 'var(--text)', fontStyle: 'italic' }}>{aiSummaries[teamId]}</p>
+                        </div>
+                    )}
+
+                    {/* Scores table */}
+                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                        <thead>
+                            <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                                <th style={{ padding: '0.75rem 1.5rem', textAlign: 'left', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Criteria</th>
+                                <th style={{ padding: '0.75rem 1.5rem', textAlign: 'center', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Score</th>
+                                <th style={{ padding: '0.75rem 1.5rem', textAlign: 'right', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>Comments</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
+                        </thead>
+                        <tbody>
+                            {teamEvals.map(e => (
+                                <tr key={e.id} style={{ borderBottom: '1px solid var(--border)' }}>
+                                    <td style={{ padding: '1rem 1.5rem', fontWeight: 700, fontSize: '0.875rem' }}>
+                                        {e.criteriaName || `Criteria #${e.criteriaId}`}
+                                    </td>
+                                    <td style={{ padding: '1rem 1.5rem', textAlign: 'center' }}>
+                                        <span style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--accent)' }}>{e.score}</span>
+                                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginLeft: '0.25rem' }}>/ {e.maxScore}</span>
+                                    </td>
+                                    <td style={{ padding: '1rem 1.5rem', textAlign: 'right' }}>
+                                        <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontStyle: 'italic', maxWidth: '300px', marginLeft: 'auto' }}>{e.remarks || '—'}</p>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            ))}
         </div>
     );
 }

@@ -195,84 +195,84 @@ Full-stack hackathon evaluation platform. Backend is Spring Boot 3.x (Java 17+) 
 - [ ] 9. Checkpoint — ensure all backend tests pass end-to-end
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 10. Frontend foundation — project setup, Axios config, AuthContext, ProtectedRoute, routing
-  - [ ] 10.1 Install missing frontend dependencies: `axios`, `react-router-dom@6`, `react-hook-form`, `yup`, `@hookform/resolvers`, `fast-check`; configure Tailwind CSS (if not already done via `index.css`)
+- [x] 10. Frontend foundation — project setup, Axios config, AuthContext, ProtectedRoute, routing
+  - [x] 10.1 Install missing frontend dependencies: `axios`, `react-router-dom@6`, `react-hook-form`, `yup`, `@hookform/resolvers`, `fast-check`; configure Tailwind CSS (if not already done via `index.css`)
     - _Requirements: 13.5_
-  - [ ] 10.2 Create `src/api/axiosInstance.js`: Axios instance with `baseURL=/api`, request interceptor attaching `Authorization: Bearer <jwt>` from localStorage, response interceptor handling 401 → call `POST /api/auth/refresh-token` → update stored JWT → retry original request once → redirect to `/login` on second failure
+  - [x] 10.2 Create `src/api/axiosInstance.js`: Axios instance with `baseURL=/api`, request interceptor attaching `Authorization: Bearer <jwt>` from localStorage, response interceptor handling 401 → call `POST /api/auth/refresh-token` → update stored JWT → retry original request once → redirect to `/login` on second failure
     - _Requirements: 13.5_
   - [ ]* 10.3 Write property test for token refresh interceptor retry (Property 40)
     - **Property 40: Token refresh interceptor retries original request**
     - **Validates: Requirements 13.5**
-  - [ ] 10.4 Create `src/context/AuthContext.jsx`: React context with `{ user, jwt, role, login(jwt, refreshToken, role, userId), logout() }`; persist JWT and refreshToken to localStorage; expose `useAuth()` hook
+  - [x] 10.4 Create `src/context/AuthContext.jsx`: React context with `{ user, jwt, role, login(jwt, refreshToken, role, userId), logout() }`; persist JWT and refreshToken to localStorage; expose `useAuth()` hook
     - _Requirements: 13.2, 13.5_
-  - [ ] 10.5 Create `src/components/ProtectedRoute.jsx`: reads `role` from `AuthContext`; redirects to `/login` if unauthenticated or role mismatch; wraps children otherwise
+  - [x] 10.5 Create `src/components/ProtectedRoute.jsx`: reads `role` from `AuthContext`; redirects to `/login` if unauthenticated or role mismatch; wraps children otherwise
     - _Requirements: 14.1, 15.1, 16.1_
-  - [ ] 10.6 Rewrite `src/App.js` with React Router v6 `<Routes>`: `/` → `LandingPage`, `/login` → `LoginPage`, `/register` → `RegisterPage`, `/admin` → `<ProtectedRoute role="ADMIN"><AdminDashboard/>`, `/judge` → `<ProtectedRoute role="JUDGE"><JudgeDashboard/>`, `/participant` → `<ProtectedRoute role="PARTICIPANT"><ParticipantDashboard/>`
+  - [x] 10.6 Rewrite `src/App.js` with React Router v6 `<Routes>`: `/` → `LandingPage`, `/login` → `LoginPage`, `/register` → `RegisterPage`, `/admin` → `<ProtectedRoute role="ADMIN"><AdminDashboard/>`, `/judge` → `<ProtectedRoute role="JUDGE"><JudgeDashboard/>`, `/participant` → `<ProtectedRoute role="PARTICIPANT"><ParticipantDashboard/>`
     - _Requirements: 13.1, 14.1, 15.1, 16.1_
 
-- [ ] 11. Public pages — Landing, Login, Register
-  - [ ] 11.1 Implement `src/pages/LandingPage.jsx`: fetch `GET /api/public/active-hackathons` on mount, render a card grid of active hackathons; link to `/login` and `/register`
+- [x] 11. Public pages — Landing, Login, Register
+  - [x] 11.1 Implement `src/pages/LandingPage.jsx`: fetch `GET /api/public/active-hackathons` on mount, render a card grid of active hackathons; link to `/login` and `/register`
     - _Requirements: 13.1_
-  - [ ] 11.2 Implement `src/pages/LoginPage.jsx`: React Hook Form + Yup schema (email required, password required); on submit call `POST /api/auth/login`, store JWT/refreshToken/role via `AuthContext.login()`, redirect to role-appropriate dashboard; display API error via toast on failure
+  - [x] 11.2 Implement `src/pages/LoginPage.jsx`: React Hook Form + Yup schema (email required, password required); on submit call `POST /api/auth/login`, store JWT/refreshToken/role via `AuthContext.login()`, redirect to role-appropriate dashboard; display API error via toast on failure
     - _Requirements: 13.2, 13.4_
-  - [ ] 11.3 Implement `src/pages/RegisterPage.jsx`: React Hook Form + Yup schema (firstName, lastName, email, password — no role field); on submit call `POST /api/auth/register`, redirect to `/login` on success; display API error on failure
+  - [x] 11.3 Implement `src/pages/RegisterPage.jsx`: React Hook Form + Yup schema (firstName, lastName, email, password — no role field); on submit call `POST /api/auth/register`, redirect to `/login` on success; display API error on failure
     - _Requirements: 13.3, 13.4_
 
-- [ ] 12. Admin dashboard
-  - [ ] 12.1 Create `src/pages/AdminDashboard.jsx` with tab navigation: Overview | Hackathons | Judges | Users | Criteria | Teams | Evaluations | Results | Audit; render the active tab's panel component
+- [x] 12. Admin dashboard
+  - [x] 12.1 Create `src/pages/AdminDashboard.jsx` with tab navigation: Overview | Hackathons | Judges | Users | Criteria | Teams | Evaluations | Results | Audit; render the active tab's panel component
     - _Requirements: 14.1_
-  - [ ] 12.2 Implement `OverviewPanel`: fetch summary counts (total hackathons, judges, teams, pending acceptances) and display as stat cards
+  - [x] 12.2 Implement `OverviewPanel`: fetch summary counts (total hackathons, judges, teams, pending acceptances) and display as stat cards
     - _Requirements: 14.2_
-  - [ ] 12.3 Implement `HackathonManagerPanel`: list hackathons in a table; inline form (React Hook Form + Yup) for create/edit with fields name, description, startDate, endDate, isActive; delete button with confirmation; call admin hackathon endpoints
+  - [x] 12.3 Implement `HackathonManagerPanel`: list hackathons in a table; inline form (React Hook Form + Yup) for create/edit with fields name, description, startDate, endDate, isActive; delete button with confirmation; call admin hackathon endpoints
     - _Requirements: 14.3_
-  - [ ] 12.4 Implement `JudgeManagementPanel`: list judges; form to create judge (email + password); delete button; call `POST /api/admin/judges`, `GET /api/admin/judges`, `DELETE /api/admin/judges/{id}`
+  - [x] 12.4 Implement `JudgeManagementPanel`: list judges; form to create judge (email + password); delete button; call `POST /api/admin/judges`, `GET /api/admin/judges`, `DELETE /api/admin/judges/{id}`
     - _Requirements: 14.4_
-  - [ ] 12.5 Implement `UserManagerPanel`: fetch `GET /api/admin/users` and display all users with role and createdAt in a table
+  - [x] 12.5 Implement `UserManagerPanel`: fetch `GET /api/admin/users` and display all users with role and createdAt in a table
     - _Requirements: 14.5_
-  - [ ] 12.6 Implement `CriteriaManagerPanel`: select hackathon from dropdown; list criteria; form to create/edit criteria (name, description, weight, maxScore, displayOrder); delete button; call criteria endpoints
+  - [x] 12.6 Implement `CriteriaManagerPanel`: select hackathon from dropdown; list criteria; form to create/edit criteria (name, description, weight, maxScore, displayOrder); delete button; call criteria endpoints
     - _Requirements: 14.6_
-  - [ ] 12.7 Implement `TeamManagerPanel`: list all teams with members, submission links, and acceptanceStatus; Accept/Reject buttons calling `PUT /api/admin/teams/{id}/accept` and `PUT /api/admin/teams/{id}/reject`
+  - [x] 12.7 Implement `TeamManagerPanel`: list all teams with members, submission links, and acceptanceStatus; Accept/Reject buttons calling `PUT /api/admin/teams/{id}/accept` and `PUT /api/admin/teams/{id}/reject`
     - _Requirements: 14.7_
-  - [ ] 12.8 Implement `EvaluationMonitorPanel`: fetch `GET /api/admin/analytics/{hackathonId}` and display completion status per judge and per team in a grid
+  - [x] 12.8 Implement `EvaluationMonitorPanel`: fetch `GET /api/admin/analytics/{hackathonId}` and display completion status per judge and per team in a grid
     - _Requirements: 14.8_
-  - [ ] 12.9 Implement `ResultsGeneratorPanel`: display ranked leaderboard table; "Export CSV" button calling `GET /api/admin/export/{hackathonId}` and triggering browser download
+  - [x] 12.9 Implement `ResultsGeneratorPanel`: display ranked leaderboard table; "Export CSV" button calling `GET /api/admin/export/{hackathonId}` and triggering browser download
     - _Requirements: 14.9_
-  - [ ] 12.10 Implement `AuditViewerPanel`: paginated table of audit log entries; filter controls for userId, action type, dateFrom, dateTo; call `GET /api/admin/audit-logs` with query params
+  - [x] 12.10 Implement `AuditViewerPanel`: paginated table of audit log entries; filter controls for userId, action type, dateFrom, dateTo; call `GET /api/admin/audit-logs` with query params
     - _Requirements: 14.10_
 
-- [ ] 13. Judge dashboard
-  - [ ] 13.1 Create `src/pages/JudgeDashboard.jsx` with tab navigation: Team Acceptance | Assigned Teams | Evaluation Form | My Evaluations | Leaderboard
+- [x] 13. Judge dashboard
+  - [x] 13.1 Create `src/pages/JudgeDashboard.jsx` with tab navigation: Team Acceptance | Assigned Teams | Evaluation Form | My Evaluations | Leaderboard
     - _Requirements: 15.1_
-  - [ ] 13.2 Implement `JudgeTeamAcceptancePanel`: fetch `GET /api/judge/teams`; display teams with acceptanceStatus; Accept/Reject buttons calling judge team endpoints
+  - [x] 13.2 Implement `JudgeTeamAcceptancePanel`: fetch `GET /api/judge/teams`; display teams with acceptanceStatus; Accept/Reject buttons calling judge team endpoints
     - _Requirements: 15.2_
-  - [ ] 13.3 Implement `AssignedTeamsPanel`: fetch `GET /api/judge/assignments`; list ACCEPTED assigned teams with team name, hackathon, and member count
+  - [x] 13.3 Implement `AssignedTeamsPanel`: fetch `GET /api/judge/assignments`; list ACCEPTED assigned teams with team name, hackathon, and member count
     - _Requirements: 15.3_
-  - [ ] 13.4 Implement `EvaluationFormPanel`: select team from assigned list; fetch criteria for the hackathon; render one numeric input per criterion (0 to maxScore) and a remarks textarea; submit via `POST /api/judge/evaluations` or `PUT /api/judge/evaluations/{id}` if evaluation exists; show inline validation errors
+  - [x] 13.4 Implement `EvaluationFormPanel`: select team from assigned list; fetch criteria for the hackathon; render one numeric input per criterion (0 to maxScore) and a remarks textarea; submit via `POST /api/judge/evaluations` or `PUT /api/judge/evaluations/{id}` if evaluation exists; show inline validation errors
     - _Requirements: 15.4_
-  - [ ] 13.5 Implement `MyEvaluationsPanel`: fetch `GET /api/judge/evaluations`; display submitted evaluations grouped by team with scores and remarks
+  - [x] 13.5 Implement `MyEvaluationsPanel`: fetch `GET /api/judge/evaluations`; display submitted evaluations grouped by team with scores and remarks
     - _Requirements: 15.5_
-  - [ ] 13.6 Implement `JudgeLeaderboardPanel`: fetch `GET /api/judge/leaderboard`; render read-only ranked table with rank, team name, weighted score
+  - [x] 13.6 Implement `JudgeLeaderboardPanel`: fetch `GET /api/judge/leaderboard`; render read-only ranked table with rank, team name, weighted score
     - _Requirements: 15.6_
 
-- [ ] 14. Participant dashboard
-  - [ ] 14.1 Create `src/pages/ParticipantDashboard.jsx` with tab navigation: Team Browser | Join Requests | Team Profile | Members | Project Submission | My Scores | Leaderboard; show Join Requests tab only when the authenticated user is the team lead
+- [x] 14. Participant dashboard
+  - [x] 14.1 Create `src/pages/ParticipantDashboard.jsx` with tab navigation: Team Browser | Join Requests | Team Profile | Members | Project Submission | My Scores | Leaderboard; show Join Requests tab only when the authenticated user is the team lead
     - _Requirements: 16.1, 16.4_
-  - [ ] 14.2 Implement `TeamBrowserPanel`: fetch `GET /api/public/teams/{hackathonId}`; display each team as a card showing team name, ID, and member count as "N/4"; "Request to Join" button calls `POST /api/participant/team/join`; disable button if participant is already on a team
+  - [x] 14.2 Implement `TeamBrowserPanel`: fetch `GET /api/public/teams/{hackathonId}`; display each team as a card showing team name, ID, and member count as "N/4"; "Request to Join" button calls `POST /api/participant/team/join`; disable button if participant is already on a team
     - _Requirements: 16.2, 16.3_
   - [ ]* 14.3 Write unit test for TeamBrowser member count display format
     - Test that member count renders as "N/4" for various N values
     - _Requirements: 16.2_
-  - [ ] 14.4 Implement `JoinRequestsPanel` (team lead only): fetch `GET /api/participant/team/join-requests`; list pending requests with requester name; Accept/Reject buttons calling the join-request endpoints
+  - [x] 14.4 Implement `JoinRequestsPanel` (team lead only): fetch `GET /api/participant/team/join-requests`; list pending requests with requester name; Accept/Reject buttons calling the join-request endpoints
     - _Requirements: 16.4_
-  - [ ] 14.5 Implement `TeamProfilePanel`: if no team exists, show create-team form (React Hook Form + Yup, team name required); if team exists and user is lead, show edit form; call `POST /api/participant/team` or update endpoint
+  - [x] 14.5 Implement `TeamProfilePanel`: if no team exists, show create-team form (React Hook Form + Yup, team name required); if team exists and user is lead, show edit form; call `POST /api/participant/team` or update endpoint
     - _Requirements: 16.5_
-  - [ ] 14.6 Implement `TeamMembersPanel`: list current members; "Remove" button (team lead only) calling `DELETE /api/participant/team/members/{userId}`
+  - [x] 14.6 Implement `TeamMembersPanel`: list current members; "Remove" button (team lead only) calling `DELETE /api/participant/team/members/{userId}`
     - _Requirements: 16.5 (members)_
-  - [ ] 14.7 Implement `ProjectSubmissionPanel`: React Hook Form + Yup (URL validation for GitHub and demo URLs); submit via `PUT /api/participant/team/submission`; show current saved URLs
+  - [x] 14.7 Implement `ProjectSubmissionPanel`: React Hook Form + Yup (URL validation for GitHub and demo URLs); submit via `PUT /api/participant/team/submission`; show current saved URLs
     - _Requirements: 16.6_
-  - [ ] 14.8 Implement `MyScoresPanel`: fetch `GET /api/participant/scores`; display per-criteria scores and judge remarks in a table
+  - [x] 14.8 Implement `MyScoresPanel`: fetch `GET /api/participant/scores`; display per-criteria scores and judge remarks in a table
     - _Requirements: 16.7_
-  - [ ] 14.9 Implement `ParticipantLeaderboardPanel`: fetch `GET /api/participant/leaderboard`; render ranked table with rank, team name, weighted score
+  - [x] 14.9 Implement `ParticipantLeaderboardPanel`: fetch `GET /api/participant/leaderboard`; render ranked table with rank, team name, weighted score
     - _Requirements: 16.8_
 
 - [ ] 15. Checkpoint — ensure all frontend tests pass

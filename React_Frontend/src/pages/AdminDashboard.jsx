@@ -14,7 +14,7 @@ import ResultsGeneratorPanel from '../components/admin/ResultsGeneratorPanel';
 import AuditViewerPanel from '../components/admin/AuditViewerPanel';
 
 export default function AdminDashboard() {
-  const { navigate } = useNavigate();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('Overview');
   const [hackathons, setHackathons] = useState([]);
   const [loading, setLoading] = useState(true);

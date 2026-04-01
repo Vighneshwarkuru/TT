@@ -24,6 +24,7 @@ public class JudgeController {
     private final HackathonService hackathonService;
     private final EvaluationService evaluationService;
     private final LeaderboardService leaderboardService;
+    private final AiFeedbackService aiFeedbackService;
     private final UserRepository userRepository;
 
     // ── Team acceptance ───────────────────────────────────────────────────────
@@ -90,5 +91,12 @@ public class JudgeController {
     @GetMapping("/leaderboard")
     public ResponseEntity<List<LeaderboardEntry>> getLeaderboard(@RequestParam Long hackathonId) {
         return ResponseEntity.ok(leaderboardService.getLeaderboard(hackathonId));
+    }
+
+    // ── AI Feedback ───────────────────────────────────────────────────────────
+
+    @PostMapping("/ai-feedback")
+    public ResponseEntity<AiFeedbackResponse> generateAiFeedback(@RequestBody AiFeedbackRequest req) {
+        return ResponseEntity.ok(aiFeedbackService.generateFeedback(req));
     }
 }
